@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English (default). P1.6: localization-ready keys; hi/mr overrides in values-hi/values-mr. -->
+<resources>
+    <string name="app_name">scrappy</string>
+
+    <string name="channel_recording">Recording</string>
+    <string name="channel_alerts">Alerts</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_new_session">New Session</string>
+    <string name="nav_recording">Recording</string>
+    <string name="nav_summary">Session Summary</string>
+    <string name="nav_export">Export</string>
+    <string name="nav_recovery">Recovery</string>
+    <string name="nav_errors">Errors</string>
+    <string name="nav_diagnostics">Diagnostics</string>
+
+    <string name="status_prefix">State: %1$s</string>
+    <string name="action_new_session">New session</string>
+    <string name="action_start_session">Start session (stub)</string>
+    <string name="action_request_mic">Request microphone permission</string>
+    <string name="action_start_stop_stub">Start / Stop (P4 service)</string>
+    <string name="new_session_hint">Grade, subject, pseudonymous codes, default language, notes, consent. No real names.</string>
+
+    <string name="field_grade">Grade</string>
+    <string name="field_subject">Subject</string>
+    <string name="field_teacher">Teacher code (e.g. teacher_07)</string>
+    <string name="field_school">School code (e.g. school_03)</string>
+
+    <string name="mic_granted">Microphone: granted</string>
+    <string name="mic_denied">Microphone: denied — recording disabled until granted</string>
+    <string name="mic_unknown">Microphone: not requested yet</string>
+
+    <string name="lang_hindi">Hindi</string>
+    <string name="lang_english">English</string>
+    <string name="lang_marathi">Marathi</string>
+</resources>

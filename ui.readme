@@ -1,0 +1,200 @@
+# scrappy — UI implementation reference
+
+Status: design handoff. The PNGs in `ui/` are generated screen mockups, not screenshots of a running application. Example sessions, counts, battery and storage values are illustrative; production must use real persisted data.
+
+The display name is **scrappy**, in lowercase. This supersedes earlier display names Scraper / Classroom Capture. Keep the existing application ID unless separately changed; a display-name change does not require renaming storage or exported identifiers.
+
+## 1. Design intent
+
+A quiet, simple classroom recorder. An operator should understand three things immediately: whether recording is active, which microphone is actually recording, and whether captured audio has been saved. Ochre yellow draws attention to the next action. Recording safety and legibility take precedence over decoration.
+
+- Warm ivory canvas, charcoal text, ochre primary controls.
+- Flat surfaces and light borders; no gradients, heavy shadows, mascot, decorative charts, or promotional copy.
+- One dominant action per screen.
+- Large controls, generous space, concise labels.
+- Core recording and export remain usable without models or connectivity.
+- Never show developer terms such as JNI, Room, GGUF, SAF, queue leases, schema versions, or checksums in the ordinary operator flow. Put technical details behind an expandable diagnostics view.
+
+## 2. Delivered screen references
+
+| File | Screen | Purpose |
+| --- | --- | --- |
+| `ui/01-home.png` | Home | Start a class or reopen saved sessions |
+| `ui/02-new-session.png` | New session | Choose class, language, and microphone |
+| `ui/03-recording.png` | Recording | Verify input, watch elapsed time, stop the segment |
+| `ui/04-session-summary.png` | Session summary | Confirm captured audio and optional processing progress |
+| `ui/05-export.png` | Export | Choose sessions, save a file, and share the verified result |
+
+Treat the images as visual references. Implement real Compose components and behavior, not a screenshot background. Written behavior and accessibility requirements take precedence over accidental generated text, spacing, or icon imperfections.
+
+## 3. Design tokens
+
+| Token | Value | Usage |
+| --- | --- | --- |
+| `background` | `#FAF8F1` | Main canvas |
+| `surface` | `#FFFFFF` | Fields and occasional raised-content contrast |
+| `surfaceWarm` | `#F1E9D6` | Session cards, secondary panels |
+| `primary` | `#C69A35` | Ochre main buttons and selected backgrounds |
+| `onPrimary` | `#28251F` | Charcoal labels on ochre; do not use white text here |
+| `textPrimary` | `#28251F` | Titles and body |
+| `textSecondary` | `#655E50` | Supporting copy |
+| `outline` | `#DDD7C9` | Decorative card separators |
+| `controlOutline` | `#81755E` | Interactive boundaries where a border identifies the control |
+| `success` | `#356346` | Saved/verified icon and accompanying text |
+| `warning` | `#75520D` | Warning text on warm surfaces |
+| `danger` | `#A3342D` | Recording dot, urgent errors, destructive actions |
+| `dangerSurface` | `#F8E8E4` | Error and microphone-interruption banner |
+
+Use semantic roles rather than copying hex values throughout the app. Disable Android dynamic color for this initial design so the ochre identity remains consistent. The initial screenshot set specifies light mode; do not ship an untested automatic dark inversion.
+
+Spacing: 4, 8, 12, 16, 24, 32, 48 dp. Standard horizontal content inset: 24 dp; compact widths may use 16 dp. Card corners: 16 dp. Field/button corners: 12–16 dp. Pill corners: fully rounded. Primary action minimum height: 56 dp; recording action: 72 dp. Icon glyph: 24 dp, touch target at least 48 × 48 dp. Use restrained, consistent outline Material icons.
+
+## 4. Typography
+
+- **Manrope**, weights 600 and 700: wordmark and English headings.
+- **Inter**, weights 400, 500 and 600: English body, buttons and form labels.
+- **Noto Sans Devanagari**, weights 400, 500 and 600: Hindi and Marathi text and language selectors.
+- Bundle font files and their license notices locally; no runtime font downloads.
+- Verify mixed Latin/Devanagari shaping, conjuncts, baselines and line height on Android. If the two Latin families add unnecessary size or complexity, report the tradeoff before changing the agreed typography.
+
+| Role | Size / line height | Weight |
+| --- | --- | --- |
+| Wordmark | 32 / 40 sp | 700 |
+| Screen title | 28 / 36 sp | 600 |
+| Section heading | 20 / 28 sp | 600 |
+| Body | 16 / 24 sp | 400 |
+| Button | 16 / 24 sp | 600 |
+| Supporting label | 14 / 20 sp | 400–500 |
+| Recording timer | 56 / 64 sp | 600; tabular digits |
+
+Use sp, honor system font scaling, and allow content to wrap. Do not place essential content at fixed vertical coordinates. A timer must shrink or wrap gracefully instead of clipping at long durations. Reference images use English copy; the language choices are `हिन्दी`, `English`, `मराठी`. Bundle translations for any UI locale declared supported; do not confuse recording language with UI language.
+
+## 5. Navigation and common behavior
+
+Home has two destinations: Sessions and Exports. Settings opens from the header. Forms and task screens have a Back control; recording has a persistent prominent state and a stop control even after navigation. Starting a session and starting microphone capture are separate, clearly named actions.
+
+Use a scrollable content region and an inset-aware bottom action area. Respect status/navigation bars, display cutouts and the keyboard. Do not cover buttons with snackbars or transient banners.
+
+Back navigation and rotation must never silently stop recording. Ending a session while recording first asks whether to stop and save; after a confirmed stop it waits for persistence before ending the session. Do not confirm ordinary non-destructive actions unnecessarily.
+
+## 6. Home
+
+- Header: `scrappy`; accessible Settings icon.
+- Small status: `Offline and ready` only when capture prerequisites are satisfied. If a permission or storage problem exists, show its real status and a resolution action.
+- Heading: `Ready for class?`
+- Primary action: `New session`.
+- Recent sessions: grade/subject, language, sample count, recorded duration and local-save state.
+- Selecting a session opens its summary or its active recording state.
+- If an unfinished session exists, place `Continue session` ahead of the new-session action.
+- Empty state: `Your first class starts here.` / `Create a session to begin recording.`
+- Storage row uses real available storage; do not display simulated estimates.
+
+## 7. New session
+
+- Grade and subject are visible and easy to choose or type; keep choices flexible.
+- Recording language: Hindi, English, Marathi, single selection.
+- Microphone: device chooser showing detected inputs. Selection is a preference until the live input is verified.
+- Optional details expand to teacher code, school code and notes. Use pseudonyms; avoid real names.
+- An authorization acknowledgement may be required by deployment policy. Never precheck it or claim it establishes legal consent. Resolve policy before field deployment.
+- Primary action: `Create session`. Next screen is ready-to-record with `Start recording`; creating a session must not secretly activate the microphone.
+- Explain microphone permission just before the first capture request. Handle denial without losing form values.
+- Disable unavailable inputs with an explanation, rather than listing nonexistent RØDE models.
+
+## 8. Recording
+
+Show class context, current sample number, selected language, verified live microphone, timer, a modest level meter, and explicit `Recording` text with a red dot. Color is supplemental, never the only status signal.
+
+The dominant ochre control is `Stop segment`, with a square stop icon. Do not add competing export or model controls. Display `24 saved · 3 awaiting transcription` as secondary information below the main action.
+
+States:
+
+| State | Primary action / feedback |
+| --- | --- |
+| Ready | `Start recording`; current input preference visible |
+| Starting | `Starting microphone…`; guard against double taps |
+| Recording | `Stop segment`; actual input and elapsed time |
+| Saving | `Saving audio…`; do not claim it is saved yet |
+| Saved | `Segment saved`; immediately enable `Start next segment` |
+| Interrupted | `Recording interrupted`; retained duration and `Review recovery` / `Start new segment` |
+| Storage failure | `Recording stopped. Storage is full.`; explain retained evidence and recovery action |
+
+Stopping a manual segment returns to a ready state. Never start recording again without an explicit action in manual mode. ASR or annotation progress must not disable `Start next segment`.
+
+The elapsed timer represents capture time, independent of wall-clock adjustments. When a route changes, show the actual result: `Microphone changed to Phone microphone`, or `Microphone disconnected. Recording stopped.` Never assert uninterrupted capture without evidence. Preserve and report any interruption or gap.
+
+Do not promise recording through process death, reboot, or force-stop. Recover retained files at next launch, disclose the interruption, and require an explicit action to capture again.
+
+## 9. Session summary
+
+- Session title, date, language and optional metadata.
+- Most prominent: saved samples and total audio duration.
+- Compact progress rows for transcription and optional suggestions.
+- Primary action when finished: `Export session`.
+- Secondary action: `Record more` if the session can be continued.
+- Sample list with sequence, duration and real status. Optional transcript inspection is read-only by default.
+- Label generated annotations `AI suggestion`; they are not verified classroom facts.
+- A failed transcription says `Audio saved · Transcription unavailable` with Retry/details. A derived-output failure does not block export.
+- Never make an all-green summary if some audio is missing or corrupt. List affected samples and require acknowledgement for a partial export.
+
+## 10. Export and sharing
+
+- Select one or more sessions; show real sample count and estimated file size.
+- Explain briefly: `Includes audio, transcripts and session details.` Indicate missing optional outputs without treating them as missing audio.
+- Primary action: `Save export`. Open the Android document picker for a destination.
+- Progress states: Preparing → Writing file → Checking file → Saved.
+- Use indeterminate progress when total work is unknown; never invent percentages.
+- Source recordings remain on the phone. Never automatically delete them after export.
+- Completion: file name, actual size, verification result, `Share file`, and `Done`.
+- `Share file` opens Android's standard share sheet. WhatsApp, nearby sharing, Drive, file managers or other compatible installed apps may appear. Do not build a WhatsApp-specific integration or promise delivery.
+- The user can save locally and transfer by USB instead. Saving locally requires no network. Sending through an external app may require connectivity and follows that app's behavior.
+- Large exports may exceed a receiving app's limits. Show size and a plain suggestion to use USB or select fewer sessions; do not assume a fixed messaging-app size limit.
+- Do not show `Sent to Mac` or `Backed up` after merely launching the share sheet.
+- SAF providers do not universally support atomic rename, seeking, or reliable read-back. Show `Written; verification unavailable` if read-back cannot be completed; reserve `Verified` for a full successful check. Report failed/interrupted output separately from intact source data and allow retry to a new file.
+
+## 11. Recovery, errors and settings
+
+Use an inline banner for actionable warnings and a dedicated recovery screen for damaged or interrupted evidence. Show what was retained, what could not be recovered, and one next action. Never silently discard quarantined files. Normal operators see plain-language errors; technical details are expandable and contain no transcript or audio content by default.
+
+Settings: microphone preference, recording language default, model status/import, processing preference, storage, diagnostics, About. Advanced model parameters belong behind an advanced disclosure. Do not expose a loading spinner that blocks the entire application while models load.
+
+After process death: `An interrupted recording was found. Review the recovered audio before continuing.` Recover safely first; show actual recovered counts. Missing models: `Recording is available. Install a transcription model to process audio on this phone.`
+
+## 12. Accessibility and verification
+
+- Meet WCAG AA text contrast and 3:1 non-text contrast for essential boundaries/icons. Validate final theme combinations rather than assuming screenshots prove compliance.
+- Test 200% font scaling, 320dp width, portrait/landscape, keyboard open, and long Hindi/Marathi text.
+- TalkBack labels must include control purpose and selected/recording state. Use radio semantics for language selection and state descriptions for recording.
+- Do not announce the timer every second. Announce recording start/stop and urgent interruptions once.
+- Every gesture-only operation needs a visible button alternative.
+- Motion is minimal; honor reduced-motion preferences. No flashing recording decoration.
+- Verify lower-light and classroom daylight readability on the actual phone.
+
+## 13. Coding-agent implementation checklist
+
+- [ ] Apply display name `scrappy` and create semantic theme tokens.
+- [ ] Bundle licensed fonts locally; test Devanagari rendering.
+- [ ] Build reusable AppHeader, PrimaryAction, SessionCard, LanguageSelector, MicrophoneSelector, StatusBanner and ProcessingSummary components.
+- [ ] Implement the five pictured screens with real state and navigation.
+- [ ] Implement empty, denied-permission, saving, failed, interrupted, missing-model and export-unverified variants.
+- [ ] Connect recording UI to service-owned state; never fabricate recording status from button taps.
+- [ ] Keep preview fixtures out of production data and exports.
+- [ ] Wire local export and Android sharing; preserve source recordings.
+- [ ] Verify accessibility, text overflow and device input changes.
+- [ ] Compare real app screenshots with this visual reference; document intentional differences.
+
+If a required behavior cannot be implemented reliably, report the exact issue, evidence, options and recommendation to the user, then wait for their decision on the affected work. Continue independent tasks. Do not hide the issue by making the UI claim a successful operation.
+
+## 14. Screen references (mockups)
+
+The complete reference set lives in `ui/`:
+
+- `ui/01-home.png` — Home: status, `New session`, recent sessions, storage.
+- `ui/02-new-session.png` — New session: grade, subject, language, microphone, optional details.
+- `ui/03-recording.png` — Recording: verified mic, timer, level meter, `Stop segment`.
+- `ui/04-session-summary.png` — Session summary: saved samples, duration, processing rows, export.
+- `ui/05-export.png` — Export: session selection, size estimate, save/share.
+- `ui/06-settings.png` — Settings: microphone preference, language default, model status/import, processing, storage, diagnostics, About.
+- `ui/07-recovery.png` — Recovery: interrupted capture, retained/gap report, keep/discard choices.
+- `ui/08-model-setup-v2.png` — Model setup: import ASR and schema-generator model files via Android file picker, SHA-256 verify, install status.
+
+Note: `SampleforUi/` has been relocated to `ui/`; these paths are canonical.

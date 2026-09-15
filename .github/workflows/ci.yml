@@ -1,0 +1,55 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept licenses + install platform 35, build-tools 35.0.1, NDK r27c, CMake 3.22.1
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.1" "ndk;27.2.12479018" "cmake;3.22.1"
+
+      - name: Offline gate — production manifest must not request INTERNET
+        run: |
+          if grep -r "android.permission.INTERNET" app/src/main/AndroidManifest.xml; then
+            echo "FAIL: INTERNET permission found in production manifest (P0.6 gate)"; exit 1
+          fi
+          echo "Offline gate passed: no INTERNET permission."
+
+      - name: Schema validation placeholder (P2/P9 adds JSON schemas)
+        run: |
+          if [ -d "schemas" ]; then
+            echo "Validating schemas in ./schemas (hook for P2/P9)."
+            ls schemas
+          else
+            echo "No schemas/ dir yet (expected in P1) — skipping."
+          fi
+
+      - name: Format check (ktlint)
+        run: ./gradlew ktlintCheck --stacktrace
+
+      - name: Debug build
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Lint
+        run: ./gradlew lintDebug --stacktrace
+
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest --stacktrace

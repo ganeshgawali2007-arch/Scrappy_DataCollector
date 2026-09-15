@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hindi labels (P1.6 starter; expanded when operator workflow is finalized). -->
+<resources>
+    <string name="app_name">scrappy</string>
+
+    <string name="channel_recording">रिकॉर्डिंग</string>
+    <string name="channel_alerts">अलर्ट</string>
+
+    <string name="nav_home">होम</string>
+    <string name="nav_new_session">नया सत्र</string>
+    <string name="nav_recording">रिकॉर्डिंग</string>
+    <string name="nav_summary">सत्र सारांश</string>
+    <string name="nav_export">निर्यात</string>
+    <string name="nav_recovery">पुनर्प्राप्ति</string>
+    <string name="nav_errors">त्रुटियाँ</string>
+    <string name="nav_diagnostics">निदान</string>
+
+    <string name="status_prefix">स्थिति: %1$s</string>
+    <string name="action_new_session">नया सत्र</string>
+    <string name="action_start_session">सत्र शुरू करें (स्टब)</string>
+    <string name="action_request_mic">माइक्रोफ़ोन अनुमति माँगें</string>
+    <string name="action_start_stop_stub">शुरू / रोकें (P4 सेवा)</string>
+    <string name="new_session_hint">कक्षा, विषय, छद्म कोड, डिफ़ॉल्ट भाषा, नोट्स, सहमति। असली नाम नहीं।</string>
+
+    <string name="field_grade">कक्षा</string>
+    <string name="field_subject">विषय</string>
+    <string name="field_teacher">शिक्षक कोड (जैसे teacher_07)</string>
+    <string name="field_school">स्कूल कोड (जैसे school_03)</string>
+
+    <string name="mic_granted">माइक्रोफ़ोन: अनुमति मिली</string>
+    <string name="mic_denied">माइक्रोफ़ोन: अस्वीकृत — अनुमति मिलने तक रिकॉर्डिंग बंद</string>
+    <string name="mic_unknown">माइक्रोफ़ोन: अभी माँगा नहीं गया</string>
+
+    <string name="lang_hindi">हिन्दी</string>
+    <string name="lang_english">अंग्रेज़ी</string>
+    <string name="lang_marathi">मराठी</string>
+</resources>
