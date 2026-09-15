@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scrappy.local/schemas/pedagogical_sample.v2.schema.json",
+  "title": "pedagogical_sample.v2",
+  "description": "One teaching utterance/activity record. Human reference: docs/DATA_SCHEMA.md.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "sample_id",
+    "session_id",
+    "sequence_number",
+    "source",
+    "source_language",
+    "grade",
+    "subject",
+    "audio",
+    "asr",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": { "const": "pedagogical_sample.v2" },
+    "sample_id": { "type": "string", "minLength": 1 },
+    "session_id": { "type": "string", "minLength": 1 },
+    "sequence_number": { "type": "integer", "minimum": 1 },
+    "source": { "type": "string" },
+    "source_language": { "enum": ["hi", "en", "mr"] },
+    "target": { "type": "string" },
+    "target_language": { "type": "string", "minLength": 1 },
+    "translation_status": { "enum": ["pending", "machine_draft", "human_verified", "rejected"] },
+    "grade": { "anyOf": [{ "type": "integer" }, { "type": "string", "minLength": 1 }] },
+    "subject": { "type": "string" },
+    "topic": { "type": ["string", "null"] },
+    "activity": {
+      "type": ["string", "null"],
+      "enum": ["oral_practice", "explanation", "question_answer", "demonstration", "reading", "group_work", "assessment", null]
+    },
+    "learning_objective": { "type": ["string", "null"] },
+    "pedagogical_form": {
+      "type": ["string", "null"],
+      "enum": ["instruction", "question", "explanation", "example", "feedback", "story", "song", null]
+    },
+    "interaction_type": { "type": ["string", "null"] },
+    "concept_stage": {
+      "type": ["string", "null"],
+      "enum": ["introduction", "explanation", "guided_practice", "practice", "assessment", "recap", null]
+    },
+    "examples": { "type": "array", "items": { "type": "string" } },
+    "expected_learner_response": { "type": ["string", "null"] },
+    "translation_notes": { "type": "string" },
+    "tts": {
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "normalized_text": { "type": "string" },
+        "pronunciation_notes": { "type": "string" },
+        "speaker_id": { "type": "string" },
+        "status": { "enum": ["pending", "ready", "excluded"] }
+      }
+    },
+    "audio": {
+      "type": "object",
+      "required": ["path", "sha256", "duration_ms"],
+      "properties": {
+        "path": { "type": "string" },
+        "sha256": { "type": "string" },
+        "mime": { "type": "string" },
+        "sample_rate_hz": { "type": "integer" },
+        "channels": { "type": "integer" },
+        "duration_ms": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "asr": {
+      "type": "object",
+      "properties": {
+        "status": { "enum": ["available", "unavailable", "failed"] },
+        "path": { "type": ["string", "null"] },
+        "text": { "type": "string" },
+        "model_id": { "type": ["string", "null"] },
+        "model_version": { "type": ["string", "null"] },
+        "verified": { "type": "boolean" }
+      }
+    },
+    "annotation": {
+      "type": "object",
+      "properties": {
+        "status": { "enum": ["unavailable", "available", "failed"] },
+        "path": { "type": ["string", "null"] },
+        "claims_verified": { "type": "boolean" },
+        "generated_by": { "type": ["string", "null"] }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "properties": {
+        "rms_db": { "type": ["number", "null"] },
+        "peak_db": { "type": ["number", "null"] },
+        "clipping_detected": { "type": "boolean" },
+        "silence_ratio": { "type": ["number", "null"] },
+        "flags": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["created_at", "processing_state", "app_version"],
+      "properties": {
+        "created_at": { "type": "string" },
+        "recorded_start": { "type": ["string", "null"] },
+        "recorded_end": { "type": ["string", "null"] },
+        "input_device": { "type": ["string", "null"] },
+        "code_switching": { "type": "boolean" },
+        "processing_state": { "type": "string" },
+        "app_version": { "type": "string" }
+      }
+    },
+    "review": {
+      "type": "object",
+      "properties": {
+        "status": { "enum": ["unreviewed", "in_review", "verified", "rejected"] },
+        "reviewer_id": { "type": "string" },
+        "reviewed_at": { "type": ["string", "null"] },
+        "source_audio_checked": { "type": "boolean" },
+        "pedagogical_fidelity": { "enum": ["pending", "faithful", "partially_faithful", "unfaithful"] },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

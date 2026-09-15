@@ -19,61 +19,71 @@ import com.scraper.classroomcapture.R
 // explicit bundling in Compose FontFamily.
 //
 // All sizes are sp to honor system font scaling. Timer uses tabular digits.
-private val ManropeFamily = FontFamily(
-    Font(R.font.manrope_600, weight = FontWeight.SemiBold),
-    Font(R.font.manrope_700, weight = FontWeight.Bold),
-)
+private val ManropeFamily =
+    FontFamily(
+        Font(R.font.manrope_600, weight = FontWeight.SemiBold),
+        Font(R.font.manrope_700, weight = FontWeight.Bold),
+    )
 
-private val BodyFamily = FontFamily(
-    Font(R.font.inter_400, weight = FontWeight.Normal),
-    Font(R.font.inter_500, weight = FontWeight.Medium),
-    Font(R.font.inter_600, weight = FontWeight.SemiBold),
-)
+private val BodyFamily =
+    FontFamily(
+        Font(R.font.inter_400, weight = FontWeight.Normal),
+        Font(R.font.inter_500, weight = FontWeight.Medium),
+        Font(R.font.inter_600, weight = FontWeight.SemiBold),
+    )
 
-internal val ScrappyTypography = Typography(
-    displayLarge = TextStyle(
-        fontFamily = ManropeFamily,
-        fontWeight = FontWeight.Bold,
-        fontSize = 32.sp,
-        lineHeight = 40.sp,
-    ),
-    headlineLarge = TextStyle(
-        fontFamily = ManropeFamily,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 28.sp,
-        lineHeight = 36.sp,
-    ),
-    headlineMedium = TextStyle(
-        fontFamily = ManropeFamily,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 20.sp,
-        lineHeight = 28.sp,
-    ),
-    bodyLarge = TextStyle(
-        fontFamily = BodyFamily,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-    ),
-    bodyMedium = TextStyle(
-        fontFamily = BodyFamily,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-    ),
-    labelLarge = TextStyle(
-        fontFamily = BodyFamily,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-    ),
-    labelMedium = TextStyle(
-        fontFamily = BodyFamily,
-        fontWeight = FontWeight.Medium,
-        fontSize = 14.sp,
-        lineHeight = 20.sp,
-    ),
-)
+internal val ScrappyTypography =
+    Typography(
+        displayLarge =
+            TextStyle(
+                fontFamily = ManropeFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = 32.sp,
+                lineHeight = 40.sp,
+            ),
+        headlineLarge =
+            TextStyle(
+                fontFamily = ManropeFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 28.sp,
+                lineHeight = 36.sp,
+            ),
+        headlineMedium =
+            TextStyle(
+                fontFamily = ManropeFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 20.sp,
+                lineHeight = 28.sp,
+            ),
+        bodyLarge =
+            TextStyle(
+                fontFamily = BodyFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 16.sp,
+                lineHeight = 24.sp,
+            ),
+        bodyMedium =
+            TextStyle(
+                fontFamily = BodyFamily,
+                fontWeight = FontWeight.Normal,
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+            ),
+        labelLarge =
+            TextStyle(
+                fontFamily = BodyFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                lineHeight = 24.sp,
+            ),
+        labelMedium =
+            TextStyle(
+                fontFamily = BodyFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+            ),
+    )
 
 // Roles surfaced for screens that need the raw reference (ui.readme §4).
 internal val WordmarkStyle = ScrappyTypography.displayLarge
@@ -82,10 +92,11 @@ internal val SectionHeadingStyle = ScrappyTypography.headlineMedium
 internal val BodyStyle = ScrappyTypography.bodyLarge
 internal val ButtonStyle = ScrappyTypography.labelLarge
 internal val SupportingLabelStyle = ScrappyTypography.labelMedium
-internal val TimerStyle = TextStyle(
-    fontFamily = ManropeFamily,
-    fontWeight = FontWeight.SemiBold,
-    fontSize = 56.sp,
-    lineHeight = 64.sp,
-    fontFeatureSettings = "tnum",
-)
+internal val TimerStyle =
+    TextStyle(
+        fontFamily = ManropeFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 56.sp,
+        lineHeight = 64.sp,
+        fontFeatureSettings = "tnum",
+    )

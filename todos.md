@@ -68,15 +68,16 @@ _Verified 2026-09-14: `assembleDebug` + `lintDebug` + `testDebugUnitTest` pass, 
 
 ## Part 2 — Data model and Room persistence
 
-- [ ] P2.1 Define immutable domain models: Session, ClassroomSample, Artifact, ProcessingJob, DeviceEvent, QualityMetrics, ExportRecord.
-- [ ] P2.2 Define Room entities, DAOs, indexes, foreign keys, and transaction boundaries.
-- [ ] P2.3 Implement the persisted sample state machine and legal-transition validator.
-- [ ] P2.4 Add attempt counts, lease/heartbeat fields, error codes, timestamps, checksums, schema version, and model identity fields.
-- [ ] P2.5 Implement explicit Room migrations and migration tests; never add destructive fallback.
-- [ ] P2.6 Implement repositories exposing `Flow`/suspend APIs; keep UI independent of Room details.
-- [ ] P2.7 Add JSON serialization and versioned schemas for ASR, annotation, events, manifest, and JSONL records.
+- [x] P2.1 Define immutable domain models: Session, ClassroomSample, Artifact, ProcessingJob, DeviceEvent, QualityMetrics, ExportRecord.
+- [x] P2.2 Define Room entities, DAOs, indexes, foreign keys, and transaction boundaries.
+- [x] P2.3 Implement the persisted sample state machine and legal-transition validator.
+- [x] P2.4 Add attempt counts, lease/heartbeat fields, error codes, timestamps, checksums, schema version, and model identity fields.
+- [x] P2.5 Implement explicit Room migrations and migration tests; never add destructive fallback.
+- [x] P2.6 Implement repositories exposing `Flow`/suspend APIs; keep UI independent of Room details.
+- [x] P2.7 Add JSON serialization and versioned schemas for ASR, annotation, events, manifest, and JSONL records.
 
 **Verify:** create, close, reopen, and query sessions/samples after process death; all migration tests pass.
+_Verified 2026-09-15: `assembleDebug` + `lintDebug` + `ktlintCheck` + `testDebugUnitTest` (19 tests) green; `connectedDebugAndroidTest` 2/2 pass on Scraper_API35 (schema-vs-export validation + close/reopen durability); no destructive fallback; fresh APK (0.2.0-p2) installed, app launches with no crash (pid 7047)._
 
 ## Part 3 — Artifact storage and integrity
 

@@ -16,8 +16,10 @@ android {
         applicationId = "com.scraper.classroomcapture"
         minSdk = 29
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0-p1"
+        versionCode = 2
+        versionName = "0.2.0-p2"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         vectorDrawables {
             useSupportLibrary = true
@@ -71,6 +73,18 @@ android {
     ksp {
         arg("room.schemaLocation", "$projectDir/schemas")
     }
+    sourceSets {
+        // Unit tests load the canonical dataset fixtures from the repo-root
+        // schemas/ dir (single source of truth, also seen by CI).
+        getByName("test") {
+            resources.srcDir("../schemas")
+        }
+        // MigrationTestHelper loads exported Room schemas from test assets
+        // (P2.5): <database-class>/1.json must be on the classpath.
+        getByName("androidTest") {
+            assets.srcDir("schemas")
+        }
+    }
 }
 
 dependencies {
@@ -96,4 +110,9 @@ dependencies {
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    testImplementation(libs.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.room.testing)
 }

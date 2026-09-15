@@ -230,6 +230,18 @@ Legal transitions enforced by a single validator component (P2.3):
 - Source recordings always remain on the phone; never auto-deleted after export.
 - `ExportRecord` persists: export ID, path, checksum, timestamp, verification status (`VERIFIED` / `WRITTEN_UNVERIFIED`).
 
+## D18. Dataset schema — pedagogical_sample.v2 (user decision 2026-09-15)
+
+- Canonical schema filed at `docs/DATA_SCHEMA.md` (source: user-supplied schema text).
+- Canonical record is a teaching utterance/activity (`records.jsonl`, one UTF-8 JSON object per record), linked to source audio + provenance. Not a generic annotation record.
+- Android v1 populates `source` from ASR; `target`/gold fields stay pending for Mac review. Reviewer corrections create a new immutable `gold.v2` artifact linked by `sample_id`; raw audio/ASR never changes.
+- Capture languages: `hi`, `en`, `mr`. Export `target_language` is ISO 639-3 when known (incl. `mun` Mundari); sentinel `"unset"` until known — never a display name in target text.
+- `provenance.processing_state` maps 1:1 to the D14 14-state machine (`READY_FOR_EXPORT` etc.).
+- Training views (`translation_pairs.v1`, `tts_pairs.v1`, `pedagogy_eval.v1`) are derived, each retaining `sample_id`; gold training data requires `translation_status: human_verified`.
+- Supersedes D12's `manifest.v1.json` naming: export manifest is `manifest.v2.json`, export dir layout per schema §Files and immutability.
+- Unknown values use `null`/`pending`, never fabricated. AI metadata is suggestion-only, retains evidence spans + `generated_by`.
+- OPEN: `pedagogical_form` vocabulary contained a suspect value ` ಹಾಡ` (leading space, Kannada script) — user authorized editor decision 2026-09-15: corrected to `song` (ಹಾಡ = "song"), documented in `docs/DATA_SCHEMA.md`. Resolved.
+
 ## Open items / TODOs
 
 - [ ] Record exact 2023 phone fingerprint on first connection (D2.2).
@@ -238,6 +250,7 @@ Legal transitions enforced by a single validator component (P2.3):
 - [ ] Pin whisper.cpp revision + model SHAs + licenses at P7.1.
 - [x] Verify production manifest contains no `INTERNET` (P0.6 gate).
 - [ ] Finalize phone model, RØDE model, class sizes, transfer method (non-blocking).
+- [x] Confirm intended `pedagogical_form` value for the suspect ` ಹಾಡ` entry (D18 — resolved as `song`).
 
 ## P0.4 Conventions (recorded for skeleton)
 

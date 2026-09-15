@@ -3,6 +3,19 @@ package com.scraper.classroomcapture.di
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.scraper.classroomcapture.data.local.ScraperDatabase
+import com.scraper.classroomcapture.data.repository.ArtifactRepository
+import com.scraper.classroomcapture.data.repository.EventRepository
+import com.scraper.classroomcapture.data.repository.ExportRepository
+import com.scraper.classroomcapture.data.repository.JobRepository
+import com.scraper.classroomcapture.data.repository.RoomArtifactRepository
+import com.scraper.classroomcapture.data.repository.RoomEventRepository
+import com.scraper.classroomcapture.data.repository.RoomExportRepository
+import com.scraper.classroomcapture.data.repository.RoomJobRepository
+import com.scraper.classroomcapture.data.repository.RoomSampleRepository
+import com.scraper.classroomcapture.data.repository.RoomSessionRepository
+import com.scraper.classroomcapture.data.repository.SampleRepository
+import com.scraper.classroomcapture.data.repository.SessionRepository
 import com.scraper.classroomcapture.ui.viewmodel.DiagnosticsViewModel
 import com.scraper.classroomcapture.ui.viewmodel.ErrorsViewModel
 import com.scraper.classroomcapture.ui.viewmodel.ExportViewModel
@@ -13,17 +26,45 @@ import com.scraper.classroomcapture.ui.viewmodel.RecoveryViewModel
 import com.scraper.classroomcapture.ui.viewmodel.SummaryViewModel
 
 /**
- * Manual DI container (P1 scaffolding). P2 will add Room repositories,
+ * Manual DI container. P2 adds the Room database + repositories (P2.6);
  * P3 ArtifactStore, P4 recording controller, P6 dispatcher, P7 ASREngine.
- * Kept interface-segregated so UI depends on abstractions, not Room.
+ * UI depends on repository abstractions, never on Room.
  */
 interface AppContainer {
     val appContext: Context
+    val database: ScraperDatabase
+    val sessionRepository: SessionRepository
+    val sampleRepository: SampleRepository
+    val artifactRepository: ArtifactRepository
+    val jobRepository: JobRepository
+    val eventRepository: EventRepository
+    val exportRepository: ExportRepository
 
     fun viewModelFactory(): ViewModelProvider.Factory
 }
 
 class DefaultAppContainer(override val appContext: Context) : AppContainer {
+    override val database: ScraperDatabase by lazy { ScraperDatabase.build(appContext) }
+
+    override val sessionRepository: SessionRepository by lazy {
+        RoomSessionRepository(database.sessionDao())
+    }
+    override val sampleRepository: SampleRepository by lazy {
+        RoomSampleRepository(database.sampleDao())
+    }
+    override val artifactRepository: ArtifactRepository by lazy {
+        RoomArtifactRepository(database.artifactDao())
+    }
+    override val jobRepository: JobRepository by lazy {
+        RoomJobRepository(database.processingJobDao())
+    }
+    override val eventRepository: EventRepository by lazy {
+        RoomEventRepository(database.deviceEventDao())
+    }
+    override val exportRepository: ExportRepository by lazy {
+        RoomExportRepository(database.exportDao())
+    }
+
     override fun viewModelFactory(): ViewModelProvider.Factory =
         object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
