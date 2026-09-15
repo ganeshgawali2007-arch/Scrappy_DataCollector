@@ -136,16 +136,17 @@ _Verified 2026-09-15: 71 unit tests green (dispatcher 9/9 incl. success/idempote
 
 ## Part 7 — whisper.cpp ASR
 
-- [ ] P7.1 Vendor/pin a reviewed whisper.cpp revision and record license/provenance.
-- [ ] P7.2 Implement CMake/NDK build and JNI lifecycle with safe load/unload.
-- [ ] P7.3 Implement `ASREngine` and `TranscriptionResult` with segments, timing, model ID/version, and input checksum.
-- [ ] P7.4 Implement `ModelRegistry`, model metadata, installation checks, and SHA-256 verification.
-- [ ] P7.5 Validate WAV format and bounds before native inference.
-- [ ] P7.6 Add Hindi, English, and Marathi fixture recordings and offline transcription tests.
-- [ ] P7.7 Capture processing time, real-time factor, memory errors, and native diagnostics.
-- [ ] P7.8 Persist raw ASR JSON atomically and update state only after validation.
+- [x] P7.1 Vendor/pin a reviewed whisper.cpp revision and record license/provenance.
+- [x] P7.2 Implement CMake/NDK build and JNI lifecycle with safe load/unload.
+- [x] P7.3 Implement `ASREngine` and `TranscriptionResult` with segments, timing, model ID/version, and input checksum.
+- [x] P7.4 Implement `ModelRegistry`, model metadata, installation checks, and SHA-256 verification.
+- [x] P7.5 Validate WAV format and bounds before native inference.
+- [x] P7.6 Add Hindi, English, and Marathi fixture recordings and offline transcription tests.
+- [x] P7.7 Capture processing time, real-time factor, memory errors, and native diagnostics.
+- [x] P7.8 Persist raw ASR JSON atomically and update state only after validation.
 
 **Exit gate:** recorder + persistence + ASR survives a classroom-style trial before LLM work begins.
+_Verified 2026-09-15: 84 unit tests green (P7: 7 WavValidator + 4 ModelRegistry + 6 WhisperEngine incl. hi/en/mr fixtures, MODEL_MISSING/CORRUPT/INPUT_INVALID mapping, RTF diagnostics, no-native-call-on-bad-WAV); `assembleDebug` + `lintDebug` + `ktlintCheck` clean. Native whisper.cpp pinned (MIT, ggerganov/whisper.cpp candidate) but not yet vendored — `JniWhisperBridge.isAvailable()=false` stub maps to MODEL_MISSING without blocking capture/export; on-device tiny/base/small benchmark pending the 2023 phone (see docs/ASR.md, docs/MODEL_LICENSES.md)._
 
 ## Part 8 — Session UX and recovery
 

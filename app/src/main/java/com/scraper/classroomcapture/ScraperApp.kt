@@ -51,8 +51,11 @@ class ScraperApp : Application() {
                     ),
                 )
                 if (!report.isClean()) Log.i(TAG, "Reconciliation: $report")
-                // Engines register later (ASR in P7, LLM in P10); until then
-                // the loops idle. Recording priority is enforced in P6.7.
+                // P7: ASR engine registered (model may still be uninstalled —
+                // missing models fail jobs as MODEL_MISSING without blocking
+                // capture/export; P8 surfaces the setup banner). LLM registers
+                // in P10; until then its loop idles.
+                container.dispatcher.registerAsrEngine(container.asrEngine)
                 container.dispatcher.start()
             } catch (e: Exception) {
                 // Reconciliation must never crash startup; P8 surfaces

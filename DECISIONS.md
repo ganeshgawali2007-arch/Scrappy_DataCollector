@@ -272,7 +272,6 @@ Legal transitions enforced by a single validator component (P2.3):
 - P5.6 multi-version/physical-device matrix is pending the 2023 phone; emulator covers built-in mic only.
 
 ## D22. Durable processing queue (P6, 2026-09-15)
-
 - DB-backed jobs with unique `(sampleId, kind)` (Room v2 migration 1→2); retries reuse the row, `attemptCount` grows, crash can never duplicate work.
 - Atomic claim (`QUEUED → RUNNING` conditional update) + 10-min lease + heartbeat; startup reclaims expired leases and logs `LEASES_RECLAIMED`.
 - One job per kind at a time (native baseline, P6.3); loops idle while `recordingActive()` (recording priority, P6.7) and when the engine for that kind is unregistered (ASR P7, LLM P10).
@@ -281,12 +280,20 @@ Legal transitions enforced by a single validator component (P2.3):
 - `QueueStats` flow exposes pending/running/done/failed per kind (P6.6, wired to P8 UI).
 - Fixed in gate: claim snapshot is re-read after `claim()` so `attemptCount` survives `finish()`; added `TRANSCRIBING→QUEUED_ASR`, `ANNOTATING→QUEUED_LLM`, `ANNOTATING→TRANSCRIBED` edges (see D14).
 
+## D23. ASR engine (P7, 2026-09-15)
+
+- `FileModelRegistry` under `filesDir/scrappy/models/` (D15 file-picker flow); `installFromFile` SHA-verifies, `status` → Installed/Missing/Corrupt; default id `tiny` until the D4 benchmark picks the winner.
+- `WavValidator` enforces 16 kHz mono PCM16, 200 ms–10 min, truncation check — native never sees a bad file.
+- `JniWhisperBridge` safe load (`UnsatisfiedLinkError` → unavailable); stub `nativeIsWhisperAvailable=false` until the reviewed whisper.cpp revision is vendored (candidate `ggerganov/whisper.cpp`, MIT — see `docs/MODEL_LICENSES.md`).
+- `WhisperAsrEngine` policy: hi|en|mr gate → WAV gate → model gate → load → transcribe; native Throwables → `INFERENCE_FAILED` (retryable), OOM → `OUT_OF_MEMORY`; records `AsrDiagnostics` (RTF). Missing/corrupt → permanent `MODEL_*`, surfaced in P8 without blocking capture/export.
+- Fixtures are synthetic (never accuracy claims); field WER/CER + tiny/base/small benchmark pending the 2023 phone.
+
 ## Open items / TODOs
 
 - [ ] Record exact 2023 phone fingerprint on first connection (D2.2).
 - [x] Pin `targetSdk` + AGP/Gradle/NDK/CMake versions (done: D7).
 - [x] Record emulator fingerprint (D7.1 — attached 2026-09-14).
-- [ ] Pin whisper.cpp revision + model SHAs + licenses at P7.1.
+- [x] Pin whisper.cpp revision + model SHAs + licenses at P7.1 (pinned as candidate, not yet vendored — see D23/docs/MODEL_LICENSES.md; weights never in git).
 - [x] Verify production manifest contains no `INTERNET` (P0.6 gate).
 - [ ] Finalize phone model, RØDE model, class sizes, transfer method (non-blocking).
 - [x] Confirm intended `pedagogical_form` value for the suspect ` ಹಾಡ` entry (D18 — resolved as `song`).

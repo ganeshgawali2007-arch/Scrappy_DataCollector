@@ -3,6 +3,9 @@ package com.scraper.classroomcapture.di
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.scraper.classroomcapture.asr.FileModelRegistry
+import com.scraper.classroomcapture.asr.JniWhisperBridge
+import com.scraper.classroomcapture.asr.WhisperAsrEngine
 import com.scraper.classroomcapture.audio.AudioDeviceManager
 import com.scraper.classroomcapture.data.local.ScraperDatabase
 import com.scraper.classroomcapture.data.repository.ArtifactRepository
@@ -51,6 +54,8 @@ interface AppContainer {
     val recordingController: RecordingController
     val audioDevices: AudioDeviceManager
     val dispatcher: ProcessingDispatcher
+    val modelRegistry: FileModelRegistry
+    val asrEngine: WhisperAsrEngine
 
     fun viewModelFactory(): ViewModelProvider.Factory
 }
@@ -105,6 +110,24 @@ class DefaultAppContainer(override val appContext: Context) : AppContainer {
                     "0.0.0"
                 },
         )
+    }
+
+    // P7: user-installed ASR models (D15). APK never bundles weights.
+    override val modelRegistry: FileModelRegistry by lazy {
+        FileModelRegistry(java.io.File(appContext.filesDir, "scrappy/models"))
+    }
+    override val asrEngine: WhisperAsrEngine by lazy {
+        WhisperAsrEngine(
+            registry = modelRegistry,
+            bridge = JniWhisperBridge(),
+            defaultModelId = DEFAULT_ASR_MODEL_ID,
+        )
+    }
+
+    companion object {
+        // Default model id resolved at runtime (P7.4). Operator installs the
+        // benchmarked weights via the file picker; no hard-coded paths.
+        const val DEFAULT_ASR_MODEL_ID = "tiny"
     }
 
     override fun viewModelFactory(): ViewModelProvider.Factory =
