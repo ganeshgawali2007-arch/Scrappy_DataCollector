@@ -28,6 +28,8 @@ import kotlinx.coroutines.flow.map
 interface SessionRepository {
     suspend fun create(session: Session)
 
+    suspend fun get(id: String): Session?
+
     fun observe(id: String): Flow<Session?>
 
     fun observeAll(): Flow<List<Session>>
@@ -49,6 +51,8 @@ interface SampleRepository {
     fun observeBySession(sessionId: String): Flow<List<ClassroomSample>>
 
     suspend fun get(id: String): ClassroomSample?
+
+    suspend fun getByStates(states: List<SampleState>): List<ClassroomSample>
 
     suspend fun nextSequenceNumber(sessionId: String): Int
 
@@ -150,6 +154,8 @@ class RoomSessionRepository(private val dao: SessionDao) : SessionRepository {
         dao.insert(session.toEntity())
     }
 
+    override suspend fun get(id: String): Session? = dao.getById(id)?.toDomain()
+
     override fun observe(id: String): Flow<Session?> = dao.observeById(id).map { it?.toDomain() }
 
     override fun observeAll(): Flow<List<Session>> = dao.observeAll().map { rows -> rows.map { it.toDomain() } }
@@ -177,6 +183,8 @@ class RoomSampleRepository(private val dao: SampleDao) : SampleRepository {
         dao.observeBySession(sessionId).map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun get(id: String): ClassroomSample? = dao.getById(id)?.toDomain()
+
+    override suspend fun getByStates(states: List<SampleState>): List<ClassroomSample> = dao.getByStates(states).map { it.toDomain() }
 
     override suspend fun nextSequenceNumber(sessionId: String): Int = dao.nextSequenceNumber(sessionId)
 

@@ -16,6 +16,9 @@ import com.scraper.classroomcapture.data.repository.RoomSampleRepository
 import com.scraper.classroomcapture.data.repository.RoomSessionRepository
 import com.scraper.classroomcapture.data.repository.SampleRepository
 import com.scraper.classroomcapture.data.repository.SessionRepository
+import com.scraper.classroomcapture.data.store.ArtifactStore
+import com.scraper.classroomcapture.data.store.FileArtifactStore
+import com.scraper.classroomcapture.data.store.Reconciler
 import com.scraper.classroomcapture.ui.viewmodel.DiagnosticsViewModel
 import com.scraper.classroomcapture.ui.viewmodel.ErrorsViewModel
 import com.scraper.classroomcapture.ui.viewmodel.ExportViewModel
@@ -39,6 +42,8 @@ interface AppContainer {
     val jobRepository: JobRepository
     val eventRepository: EventRepository
     val exportRepository: ExportRepository
+    val artifactStore: ArtifactStore
+    val reconciler: Reconciler
 
     fun viewModelFactory(): ViewModelProvider.Factory
 }
@@ -63,6 +68,12 @@ class DefaultAppContainer(override val appContext: Context) : AppContainer {
     }
     override val exportRepository: ExportRepository by lazy {
         RoomExportRepository(database.exportDao())
+    }
+    override val artifactStore: ArtifactStore by lazy {
+        FileArtifactStore(java.io.File(appContext.filesDir, "scrappy"))
+    }
+    override val reconciler: Reconciler by lazy {
+        Reconciler(store = artifactStore, sessions = sessionRepository, samples = sampleRepository, artifacts = artifactRepository)
     }
 
     override fun viewModelFactory(): ViewModelProvider.Factory =

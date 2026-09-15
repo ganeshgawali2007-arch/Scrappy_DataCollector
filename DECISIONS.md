@@ -242,6 +242,14 @@ Legal transitions enforced by a single validator component (P2.3):
 - Unknown values use `null`/`pending`, never fabricated. AI metadata is suggestion-only, retains evidence spans + `generated_by`.
 - OPEN: `pedagogical_form` vocabulary contained a suspect value ` ಹಾಡ` (leading space, Kannada script) — user authorized editor decision 2026-09-15: corrected to `song` (ಹಾಡ = "song"), documented in `docs/DATA_SCHEMA.md`. Resolved.
 
+## D19. Artifact store + reconciliation (P3, 2026-09-15)
+
+- On-device root: app-private `filesDir/scrappy/`; layout `sessions/<sessionId>/samples/<sampleId>/{audio.wav,asr.v1.json,annotation.v1.json}`, `tmp/` staging, `quarantine/` (never auto-deleted). Only relative paths persisted.
+- Writes are tmp + fsync + atomic rename + dir fsync; readers never see half-written files. SHA-256 streamed (64 KB buffer).
+- Thresholds: refuse new recordings below 100 MB free, warn below 500 MB (P3.5; UI banners in P8).
+- Orphan audio with a session is adopted with language `"und"` (ISO 639-2 undetermined — never fabricated); orphans without a session are quarantined. Durable-state rows with missing audio are reported corrupt, never auto-transitioned (no legal edge exists).
+- Startup reconciliation runs every process start on IO dispatcher and logs `RECONCILIATION_COMPLETED` with counts (verified on-device 2026-09-15).
+
 ## Open items / TODOs
 
 - [ ] Record exact 2023 phone fingerprint on first connection (D2.2).

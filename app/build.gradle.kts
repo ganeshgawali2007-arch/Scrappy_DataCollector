@@ -58,6 +58,8 @@ android {
     }
     buildFeatures {
         compose = true
+        // ScraperApp logs its own version in diagnostics events (P3.6).
+        buildConfig = true
     }
     externalNativeBuild {
         cmake {

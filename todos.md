@@ -81,16 +81,17 @@ _Verified 2026-09-15: `assembleDebug` + `lintDebug` + `ktlintCheck` + `testDebug
 
 ## Part 3 — Artifact storage and integrity
 
-- [ ] P3.1 Implement `ArtifactStore` with per-session/per-sample directories.
-- [ ] P3.2 Implement atomic temporary-file writes, flush/close, rename, and corruption quarantine.
-- [ ] P3.3 Implement SHA-256, byte-size, MIME, and relative-path recording.
-- [ ] P3.4 Prevent path traversal and reject unexpected artifact paths.
-- [ ] P3.5 Add storage-space preflight, low-storage thresholds, and recoverable error UI.
-- [ ] P3.6 Implement idempotent startup reconciliation between Room and filesystem.
-- [ ] P3.7 Discover orphan audio and partial files; create recovered records or quarantine with a report.
-- [ ] P3.8 Add tests for crashes at every write/rename/transaction boundary.
+- [x] P3.1 Implement `ArtifactStore` with per-session/per-sample directories.
+- [x] P3.2 Implement atomic temporary-file writes, flush/close, rename, and corruption quarantine.
+- [x] P3.3 Implement SHA-256, byte-size, MIME, and relative-path recording.
+- [x] P3.4 Prevent path traversal and reject unexpected artifact paths.
+- [x] P3.5 Add storage-space preflight, low-storage thresholds, and recoverable error UI.
+- [x] P3.6 Implement idempotent startup reconciliation between Room and filesystem.
+- [x] P3.7 Discover orphan audio and partial files; create recovered records or quarantine with a report.
+- [x] P3.8 Add tests for crashes at every write/rename/transaction boundary.
 
 **Verify:** no orphan DB entries, no silent orphan files, checksum repeatability, recovery is idempotent.
+_Verified 2026-09-15: 41 unit tests green (store crash-boundaries, reconciler adoption/error/quarantine/idempotency with zero second-run writes, preflight thresholds); `connectedDebugAndroidTest` 2/2; lint/ktlint clean; fresh APK on Scraper_API35 launches clean and `RECONCILIATION_COMPLETED|adopted=0 errored=0 quarantined=0 corrupt=0` read back from the on-device DB. P3.5 UI banners deferred to P8; store surfaces STORAGE_LOW/Refused/Low results._
 
 ## Part 4 — Recording foreground service
 
