@@ -16,8 +16,8 @@ android {
         applicationId = "com.scraper.classroomcapture"
         minSdk = 29
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.2.0-p2"
+        versionCode = 3
+        versionName = "0.3.0-p4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -115,6 +115,7 @@ dependencies {
 
     testImplementation(libs.junit4)
     androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.room.testing)
 }

@@ -5,6 +5,8 @@
 
     <string name="channel_recording">Recording</string>
     <string name="channel_alerts">Alerts</string>
+    <string name="notification_recording_title">scrappy recording</string>
+    <string name="action_stop">Stop</string>
 
     <string name="nav_home">Home</string>
     <string name="nav_new_session">New Session</string>

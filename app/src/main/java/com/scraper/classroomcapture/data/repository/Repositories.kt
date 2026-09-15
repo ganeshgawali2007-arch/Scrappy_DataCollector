@@ -16,6 +16,7 @@ import com.scraper.classroomcapture.domain.model.ExportVerification
 import com.scraper.classroomcapture.domain.model.JobKind
 import com.scraper.classroomcapture.domain.model.JobState
 import com.scraper.classroomcapture.domain.model.ProcessingJob
+import com.scraper.classroomcapture.domain.model.QualityMetrics
 import com.scraper.classroomcapture.domain.model.SampleState
 import com.scraper.classroomcapture.domain.model.Session
 import com.scraper.classroomcapture.domain.state.SampleStateTransitions
@@ -77,6 +78,25 @@ interface SampleRepository {
         reason: String,
         now: Long,
     ): Boolean
+
+    // Capture-time quality written once at finalization (P4).
+    suspend fun updateQuality(
+        id: String,
+        quality: QualityMetrics,
+        now: Long,
+    )
+
+    suspend fun countBySessionAndStates(
+        sessionId: String,
+        states: List<SampleState>,
+    ): Int
+
+    suspend fun setRecordingWindow(
+        id: String,
+        start: Long,
+        end: Long,
+        now: Long,
+    )
 }
 
 interface ArtifactRepository {
@@ -221,6 +241,37 @@ class RoomSampleRepository(private val dao: SampleDao) : SampleRepository {
         if (!SampleStateTransitions.canReconcileToRecovered(current.state)) return false
         dao.markRecovered(id, SampleState.RECOVERED, reason, now, current.state, now)
         return true
+    }
+
+    override suspend fun updateQuality(
+        id: String,
+        quality: QualityMetrics,
+        now: Long,
+    ) {
+        val columns = quality.toColumns()
+        dao.updateQuality(
+            id,
+            columns.rmsDb,
+            columns.peakDb,
+            columns.clippingDetected,
+            columns.silenceRatio,
+            columns.flags,
+            now,
+        )
+    }
+
+    override suspend fun countBySessionAndStates(
+        sessionId: String,
+        states: List<SampleState>,
+    ): Int = dao.countBySessionAndStates(sessionId, states)
+
+    override suspend fun setRecordingWindow(
+        id: String,
+        start: Long,
+        end: Long,
+        now: Long,
+    ) {
+        dao.setRecordingWindow(id, start, end, now)
     }
 }
 

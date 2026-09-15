@@ -91,4 +91,33 @@ interface SampleDao {
         sessionId: String,
         state: SampleState,
     ): Int
+
+    @Query("SELECT COUNT(*) FROM samples WHERE sessionId = :sessionId AND state IN (:states)")
+    suspend fun countBySessionAndStates(
+        sessionId: String,
+        states: List<SampleState>,
+    ): Int
+
+    @Query("UPDATE samples SET recordedStart = :start, recordedEnd = :end, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun setRecordingWindow(
+        id: String,
+        start: Long,
+        end: Long,
+        updatedAt: Long,
+    )
+
+    @Query(
+        "UPDATE samples SET q_rmsDb = :rmsDb, q_peakDb = :peakDb, " +
+            "q_clippingDetected = :clipping, q_silenceRatio = :silenceRatio, " +
+            "q_flags = :flags, updatedAt = :updatedAt WHERE id = :id",
+    )
+    suspend fun updateQuality(
+        id: String,
+        rmsDb: Double?,
+        peakDb: Double?,
+        clipping: Boolean,
+        silenceRatio: Double?,
+        flags: String,
+        updatedAt: Long,
+    )
 }

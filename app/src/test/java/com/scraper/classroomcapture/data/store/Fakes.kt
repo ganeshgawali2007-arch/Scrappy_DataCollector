@@ -7,6 +7,7 @@ import com.scraper.classroomcapture.domain.model.Artifact
 import com.scraper.classroomcapture.domain.model.ArtifactKind
 import com.scraper.classroomcapture.domain.model.ClassroomSample
 import com.scraper.classroomcapture.domain.model.ProcessingJob
+import com.scraper.classroomcapture.domain.model.QualityMetrics
 import com.scraper.classroomcapture.domain.model.SampleState
 import com.scraper.classroomcapture.domain.model.Session
 import com.scraper.classroomcapture.domain.state.SampleStateTransitions
@@ -113,6 +114,34 @@ class FakeSampleRepository : SampleRepository {
                 updatedAt = now,
             )
         return true
+    }
+
+    override suspend fun updateQuality(
+        id: String,
+        quality: QualityMetrics,
+        now: Long,
+    ) {
+        samples[id]?.let {
+            writes++
+            samples[id] = it.copy(quality = quality, updatedAt = now)
+        }
+    }
+
+    override suspend fun countBySessionAndStates(
+        sessionId: String,
+        states: List<SampleState>,
+    ): Int = samples.values.count { it.sessionId == sessionId && it.state in states }
+
+    override suspend fun setRecordingWindow(
+        id: String,
+        start: Long,
+        end: Long,
+        now: Long,
+    ) {
+        samples[id]?.let {
+            writes++
+            samples[id] = it.copy(recordedStart = start, recordedEnd = end, updatedAt = now)
+        }
     }
 }
 

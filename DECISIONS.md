@@ -250,6 +250,15 @@ Legal transitions enforced by a single validator component (P2.3):
 - Orphan audio with a session is adopted with language `"und"` (ISO 639-2 undetermined — never fabricated); orphans without a session are quarantined. Durable-state rows with missing audio are reported corrupt, never auto-transitioned (no legal edge exists).
 - Startup reconciliation runs every process start on IO dispatcher and logs `RECONCILIATION_COMPLETED` with counts (verified on-device 2026-09-15).
 
+## D20. Recording service (P4, 2026-09-15)
+
+- Capture: `MIC` source (unprocessed, faithful archive across devices), 16 kHz mono PCM16, 100 ms read chunks on a dedicated recorder thread — never the main thread.
+- Service is `START_NOT_STICKY` with `microphone` foreground type; crash recovery belongs to P3 reconciliation, not framework resurrection. Partial wake lock (2 h timeout) covers screen-off capture.
+- Per-segment lifecycle CREATED → RECORDING → SAVING → AUDIO_SAVED → QUEUED_ASR with artifact + quality + ASR-job rows committed by the service. STOP_SEGMENT chains the next sample with sticky language.
+- Metering (rms/peak/clipping/silence/sustained-clip window) accumulates incrementally; quality flags (`interrupted`, `sustained_clipping`) persist on the sample row.
+- Interrupts (mic busy/revoked/read errors/empty capture) finalize partial audio when frames exist, else quarantine + ERROR — completed samples are never lost.
+- Notification uses a system mic glyph until the P8 brand icon lands; chronometer shows elapsed time without polling.
+
 ## Open items / TODOs
 
 - [ ] Record exact 2023 phone fingerprint on first connection (D2.2).

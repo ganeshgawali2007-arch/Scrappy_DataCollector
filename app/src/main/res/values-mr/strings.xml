@@ -5,6 +5,8 @@
 
     <string name="channel_recording">ध्वनिमुद्रण</string>
     <string name="channel_alerts">सूचना</string>
+    <string name="notification_recording_title">scrappy ध्वनिमुद्रण</string>
+    <string name="action_stop">थांबवा</string>
 
     <string name="nav_home">मुख्यपृष्ठ</string>
     <string name="nav_new_session">नवीन सत्र</string>

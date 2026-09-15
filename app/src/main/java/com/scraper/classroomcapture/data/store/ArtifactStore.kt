@@ -70,6 +70,13 @@ interface ArtifactStore {
         write: suspend (OutputStream) -> Unit,
     ): WrittenFile
 
+    // Same atomicity for seekable formats (WAV header patching): writer gets
+    // the tmp File and must leave it fully written + flushed on return.
+    suspend fun writeAtomicFile(
+        relativePath: String,
+        write: suspend (java.io.File) -> Unit,
+    ): WrittenFile
+
     suspend fun hashFile(relativePath: String): FileHash
 
     fun exists(relativePath: String): Boolean

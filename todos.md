@@ -95,18 +95,19 @@ _Verified 2026-09-15: 41 unit tests green (store crash-boundaries, reconciler ad
 
 ## Part 4 — Recording foreground service
 
-- [ ] P4.1 Declare microphone foreground-service type and required modern permissions for supported API levels.
-- [ ] P4.2 Implement service-owned recording lifecycle and binder/state stream.
-- [ ] P4.3 Implement `AudioRecord` at 16 kHz, mono, PCM16 with capability negotiation and clear failure reasons.
-- [ ] P4.4 Implement streaming WAV writer with correct header finalization and duration tracking.
-- [ ] P4.5 Add bounded buffers and writer backpressure; never retain an entire session in RAM.
-- [ ] P4.6 Implement persistent recording notification with Stop action, session, sample count, and duration.
-- [ ] P4.7 Handle screen lock, screen off, backgrounding, rotation, UI loss, and service restart.
-- [ ] P4.8 Add recording-level meter, clipping detection, silence ratio, and sustained-clipping warning.
-- [ ] P4.9 Handle interrupted recording, permission revocation, microphone busy, and write failure without losing completed samples.
-- [ ] P4.10 Add manual start/stop segmentation and sticky per-sample language.
+- [x] P4.1 Declare microphone foreground-service type and required modern permissions for supported API levels.
+- [x] P4.2 Implement service-owned recording lifecycle and binder/state stream.
+- [x] P4.3 Implement `AudioRecord` at 16 kHz, mono, PCM16 with capability negotiation and clear failure reasons.
+- [x] P4.4 Implement streaming WAV writer with correct header finalization and duration tracking.
+- [x] P4.5 Add bounded buffers and writer backpressure; never retain an entire session in RAM.
+- [x] P4.6 Implement persistent recording notification with Stop action, session, sample count, and duration.
+- [x] P4.7 Handle screen lock, screen off, backgrounding, rotation, UI loss, and service restart.
+- [x] P4.8 Add recording-level meter, clipping detection, silence ratio, and sustained-clipping warning.
+- [x] P4.9 Handle interrupted recording, permission revocation, microphone busy, and write failure without losing completed samples.
+- [x] P4.10 Add manual start/stop segmentation and sticky per-sample language.
 
 **Verify:** 10-minute valid WAV, lock/background survival, process recreation, low-storage behavior, and no UI-thread recording work.
+_Verified 2026-09-15: 52 unit tests green (WAV header/size math incl. exact 10-min sizes, meter dB/clip-window math); 3/3 device tests incl. real 3 s capture → valid RIFF/WAVE, QUEUED_ASR row, artifact + ASR-job rows, and 2 s screen-off mid-capture with clean finalize; 10-min file math asserted (19.2 MB, under refuse threshold); low-storage refusal path unit-covered + service-gated; all capture on a dedicated thread (binder only streams status). 0.3.0-p4 installed._
 
 ## Part 5 — Audio device routing
 

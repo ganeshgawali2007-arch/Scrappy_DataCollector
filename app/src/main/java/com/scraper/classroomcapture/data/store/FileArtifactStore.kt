@@ -3,7 +3,6 @@ package com.scraper.classroomcapture.data.store
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileOutputStream
 import java.io.OutputStream
 import java.io.RandomAccessFile
 import java.nio.file.Files
@@ -29,17 +28,18 @@ class FileArtifactStore(
     override suspend fun writeAtomic(
         relativePath: String,
         write: suspend (OutputStream) -> Unit,
+    ): WrittenFile = writeAtomicFile(relativePath) { tmp -> tmp.outputStream().use { write(it) } }
+
+    override suspend fun writeAtomicFile(
+        relativePath: String,
+        write: suspend (File) -> Unit,
     ): WrittenFile =
         withContext(Dispatchers.IO) {
             val target = StorePaths.resolve(root, relativePath)
             target.parentFile?.mkdirs()
             val tmp = File(File(root, StorePaths.TMP_DIR), UUID.randomUUID().toString() + ".tmp")
             try {
-                FileOutputStream(tmp).use { out ->
-                    write(out)
-                    out.flush()
-                    out.fd.sync()
-                }
+                write(tmp)
                 val hash = hashOf(tmp)
                 moveAtomic(tmp, target)
                 fsyncDir(target.parentFile)

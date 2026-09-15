@@ -5,6 +5,8 @@
 
     <string name="channel_recording">रिकॉर्डिंग</string>
     <string name="channel_alerts">अलर्ट</string>
+    <string name="notification_recording_title">scrappy रिकॉर्डिंग</string>
+    <string name="action_stop">रोकें</string>
 
     <string name="nav_home">होम</string>
     <string name="nav_new_session">नया सत्र</string>

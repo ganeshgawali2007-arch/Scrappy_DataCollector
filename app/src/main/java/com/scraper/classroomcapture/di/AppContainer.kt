@@ -19,6 +19,7 @@ import com.scraper.classroomcapture.data.repository.SessionRepository
 import com.scraper.classroomcapture.data.store.ArtifactStore
 import com.scraper.classroomcapture.data.store.FileArtifactStore
 import com.scraper.classroomcapture.data.store.Reconciler
+import com.scraper.classroomcapture.recording.RecordingController
 import com.scraper.classroomcapture.ui.viewmodel.DiagnosticsViewModel
 import com.scraper.classroomcapture.ui.viewmodel.ErrorsViewModel
 import com.scraper.classroomcapture.ui.viewmodel.ExportViewModel
@@ -44,6 +45,7 @@ interface AppContainer {
     val exportRepository: ExportRepository
     val artifactStore: ArtifactStore
     val reconciler: Reconciler
+    val recordingController: RecordingController
 
     fun viewModelFactory(): ViewModelProvider.Factory
 }
@@ -74,6 +76,9 @@ class DefaultAppContainer(override val appContext: Context) : AppContainer {
     }
     override val reconciler: Reconciler by lazy {
         Reconciler(store = artifactStore, sessions = sessionRepository, samples = sampleRepository, artifacts = artifactRepository)
+    }
+    override val recordingController: RecordingController by lazy {
+        RecordingController(appContext)
     }
 
     override fun viewModelFactory(): ViewModelProvider.Factory =
