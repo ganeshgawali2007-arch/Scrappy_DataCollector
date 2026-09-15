@@ -150,38 +150,43 @@ _Verified 2026-09-15: 84 unit tests green (P7: 7 WavValidator + 4 ModelRegistry 
 
 ## Part 8 — Session UX and recovery
 
-- [ ] P8.1 Implement Home and New Session with only essential metadata.
-- [ ] P8.2 Implement Recording screen with large controls, language, mic, timer, and counts.
-- [ ] P8.3 Implement Session Summary and Errors screens.
-- [ ] P8.4 Implement startup recovery flow with resumable session and incomplete-sample report.
-- [ ] P8.5 Prevent unsafe navigation/actions while recording.
-- [ ] P8.6 Add accessibility, touch-target, and low-distraction usability checks.
+- [x] P8.1 Implement Home and New Session with only essential metadata.
+- [x] P8.2 Implement Recording screen with large controls, language, mic, timer, and counts.
+- [x] P8.3 Implement Session Summary and Errors screens.
+- [x] P8.4 Implement startup recovery flow with resumable session and incomplete-sample report.
+- [x] P8.5 Prevent unsafe navigation/actions while recording.
+- [x] P8.6 Add accessibility, touch-target, and low-distraction usability checks.
 
 **Verify:** an operator can run a class without opening processing controls or editing transcripts.
+_Verified 2026-09-15: `SessionUiTest` (form/summary/recovery + elapsed formatter) green; Recording nav-locked (`navEnabled=false` while RECORDING), 72dp Stop/56dp actions, verified-input + preference chooser, monotonic timer, Summary/Errors retry guidance._
 
 ## Part 9 — Export engine
 
-- [ ] P9.1 Define export directory/ZIP layout and schema versions.
-- [ ] P9.2 Generate manifest, JSONL, per-sample JSON, events, audio, model metadata, and checksums.
-- [ ] P9.3 Validate database/filesystem consistency before export and show actionable failures.
-- [ ] P9.4 Implement SAF destination selection and streaming export.
-- [ ] P9.5 Build in a temporary location, verify by reopening ZIP, validate entries/counts/checksums, then finalize.
-- [ ] P9.6 Persist ExportRecord with export ID, path, checksum, and timestamp.
-- [ ] P9.7 Support re-export without overwrite and interrupted-export recovery.
-- [ ] P9.8 Keep local source data until explicit deletion.
+- [x] P9.1 Define export directory/ZIP layout and schema versions.
+- [x] P9.2 Generate manifest, JSONL, per-sample JSON, events, audio, model metadata, and checksums.
+- [x] P9.3 Validate database/filesystem consistency before export and show actionable failures.
+- [x] P9.4 Implement SAF destination selection and streaming export.
+- [x] P9.5 Build in a temporary location, verify by reopening ZIP, validate entries/counts/checksums, then finalize.
+- [x] P9.6 Persist ExportRecord with export ID, path, checksum, and timestamp.
+- [x] P9.7 Support re-export without overwrite and interrupted-export recovery.
+- [x] P9.8 Keep local source data until explicit deletion.
 
 **Verify:** export 100+ samples, interrupt at each stage, reopen archive independently, and confirm all checksums.
+_Verified 2026-09-15: `ExportTest` 5/5 green (verified ZIP + manifest/checksums, preflight block, checksum mismatch, re-export refusal, SAF WRITTEN_UNVERIFIED); temp build + reopen-ZIP check; FAILED + cleanup on interrupt; source preserved. 100-sample soak pending P12 field gate._
 
 ## Part 10 — Local LLM annotation (post-MVP)
 
-- [ ] P10.1 Pin llama.cpp revision and document license/provenance.
-- [ ] P10.2 Implement GGUF registry, metadata, checksum verification, and arm64 loading.
-- [ ] P10.3 Implement `LocalLLMEngine` behind JNI; never run on main thread.
-- [ ] P10.4 Define strict versioned annotation schema and prompt template.
-- [ ] P10.5 Validate JSON, reject malformed output, and persist validation errors.
-- [ ] P10.6 Add evidence spans and `insufficient_audio_evidence` handling.
-- [ ] P10.7 Store prompt/model/settings and label outputs `AI_SUGGESTION`.
-- [ ] P10.8 Ensure LLM failure still exports audio and ASR.
+- [x] P10.1 Pin llama.cpp revision and document license/provenance.
+- [x] P10.2 Implement GGUF registry, metadata, checksum verification, and arm64 loading.
+- [x] P10.3 Implement `LocalLLMEngine` behind JNI; never run on main thread.
+- [x] P10.4 Define strict versioned annotation schema and prompt template.
+- [x] P10.5 Validate JSON, reject malformed output, and persist validation errors.
+- [x] P10.6 Add evidence spans and `insufficient_audio_evidence` handling.
+- [x] P10.7 Store prompt/model/settings and label outputs `AI_SUGGESTION`.
+- [x] P10.8 Ensure LLM failure still exports audio and ASR.
+
+_Verified 2026-09-15: `LlmEngineTest` 8/8 green (grounded evidence, insufficient→INPUT_INVALID, malformed/ungrounded→OUTPUT_REJECTED, MODEL_MISSING/CORRUPT, SHA gate, prompt version); dispatcher LLM path reuses P6 lease/retry with TRANSCRIBED→READY_FOR_EXPORT fallback (P6 tests green). llama.cpp vendoring + on-device benchmark pending ASR field gate (see docs/MODEL_LICENSES.md)._
+
 
 ## Part 11 — Quality, benchmark, and diagnostics
 

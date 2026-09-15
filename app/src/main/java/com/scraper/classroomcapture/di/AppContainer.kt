@@ -23,6 +23,10 @@ import com.scraper.classroomcapture.data.repository.SessionRepository
 import com.scraper.classroomcapture.data.store.ArtifactStore
 import com.scraper.classroomcapture.data.store.FileArtifactStore
 import com.scraper.classroomcapture.data.store.Reconciler
+import com.scraper.classroomcapture.export.ExportManager
+import com.scraper.classroomcapture.llm.GgufRegistry
+import com.scraper.classroomcapture.llm.JniLlamaBridge
+import com.scraper.classroomcapture.llm.LocalLlmEngine
 import com.scraper.classroomcapture.processing.ProcessingDispatcher
 import com.scraper.classroomcapture.recording.RecordingController
 import com.scraper.classroomcapture.recording.RecordingStatus
@@ -56,6 +60,9 @@ interface AppContainer {
     val dispatcher: ProcessingDispatcher
     val modelRegistry: FileModelRegistry
     val asrEngine: WhisperAsrEngine
+    val llmRegistry: GgufRegistry
+    val llmEngine: LocalLlmEngine
+    val exportManager: ExportManager
 
     fun viewModelFactory(): ViewModelProvider.Factory
 }
@@ -124,10 +131,45 @@ class DefaultAppContainer(override val appContext: Context) : AppContainer {
         )
     }
 
+    // P10: schema-generator model (GGUF, D15 file-picker flow). Same
+    // app-private pattern as ASR; APK never bundles weights.
+    override val llmRegistry: GgufRegistry by lazy {
+        GgufRegistry(java.io.File(appContext.filesDir, "scrappy/models"))
+    }
+    override val llmEngine: LocalLlmEngine by lazy {
+        LocalLlmEngine(
+            registry = llmRegistry,
+            bridge = JniLlamaBridge(),
+            defaultModelId = DEFAULT_LLM_MODEL_ID,
+        ).also { dispatcher.registerLlmEngine(it) }
+    }
+
+    // P9: verified SAF/file export (temp build + reopen-ZIP check).
+    override val exportManager: ExportManager by lazy {
+        ExportManager(
+            sessions = sessionRepository,
+            samples = sampleRepository,
+            artifacts = artifactRepository,
+            events = eventRepository,
+            exports = exportRepository,
+            store = artifactStore,
+            appVersion =
+                try {
+                    appContext.packageManager.getPackageInfo(appContext.packageName, 0).versionName ?: "0.0.0"
+                } catch (e: Exception) {
+                    "0.0.0"
+                },
+        )
+    }
+
     companion object {
         // Default model id resolved at runtime (P7.4). Operator installs the
         // benchmarked weights via the file picker; no hard-coded paths.
         const val DEFAULT_ASR_MODEL_ID = "tiny"
+
+        // Schema-generator default (P10.2). Installed via the same
+        // file-picker + SHA-256 flow; recording/export work without it.
+        const val DEFAULT_LLM_MODEL_ID = "schema-gen"
     }
 
     override fun viewModelFactory(): ViewModelProvider.Factory =
@@ -135,14 +177,22 @@ class DefaultAppContainer(override val appContext: Context) : AppContainer {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
                 when {
-                    modelClass.isAssignableFrom(HomeViewModel::class.java) -> HomeViewModel() as T
-                    modelClass.isAssignableFrom(NewSessionViewModel::class.java) -> NewSessionViewModel() as T
-                    modelClass.isAssignableFrom(RecordingViewModel::class.java) -> RecordingViewModel() as T
-                    modelClass.isAssignableFrom(SummaryViewModel::class.java) -> SummaryViewModel() as T
-                    modelClass.isAssignableFrom(ExportViewModel::class.java) -> ExportViewModel() as T
-                    modelClass.isAssignableFrom(RecoveryViewModel::class.java) -> RecoveryViewModel() as T
-                    modelClass.isAssignableFrom(ErrorsViewModel::class.java) -> ErrorsViewModel() as T
-                    modelClass.isAssignableFrom(DiagnosticsViewModel::class.java) -> DiagnosticsViewModel() as T
+                    modelClass.isAssignableFrom(HomeViewModel::class.java) ->
+                        HomeViewModel(sessionRepository, sampleRepository, jobRepository, modelRegistry, artifactStore) as T
+                    modelClass.isAssignableFrom(NewSessionViewModel::class.java) ->
+                        NewSessionViewModel(sessionRepository) as T
+                    modelClass.isAssignableFrom(RecordingViewModel::class.java) ->
+                        RecordingViewModel(recordingController, sampleRepository, audioDevices) as T
+                    modelClass.isAssignableFrom(SummaryViewModel::class.java) ->
+                        SummaryViewModel(sampleRepository) as T
+                    modelClass.isAssignableFrom(ExportViewModel::class.java) ->
+                        ExportViewModel(sessionRepository, sampleRepository, exportRepository, exportManager) as T
+                    modelClass.isAssignableFrom(RecoveryViewModel::class.java) ->
+                        RecoveryViewModel(sampleRepository, eventRepository) as T
+                    modelClass.isAssignableFrom(ErrorsViewModel::class.java) ->
+                        ErrorsViewModel(sampleRepository, jobRepository, eventRepository) as T
+                    modelClass.isAssignableFrom(DiagnosticsViewModel::class.java) ->
+                        DiagnosticsViewModel(dispatcher, modelRegistry, artifactStore, llmRegistry) as T
                     else -> throw IllegalArgumentException("Unknown ViewModel ${modelClass.name}")
                 }
         }

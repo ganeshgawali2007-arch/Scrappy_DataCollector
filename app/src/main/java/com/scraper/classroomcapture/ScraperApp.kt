@@ -51,11 +51,18 @@ class ScraperApp : Application() {
                     ),
                 )
                 if (!report.isClean()) Log.i(TAG, "Reconciliation: $report")
-                // P7: ASR engine registered (model may still be uninstalled —
+                // P7/P10: engines registered (models may still be uninstalled —
                 // missing models fail jobs as MODEL_MISSING without blocking
-                // capture/export; P8 surfaces the setup banner). LLM registers
-                // in P10; until then its loop idles.
+                // capture/export; P8 surfaces the setup banner). Unregistered
+                // kinds idle; recording has priority (P6.7).
                 container.dispatcher.registerAsrEngine(container.asrEngine)
+                try {
+                    // Touches the lazy LLM engine (registers itself); missing
+                    // GGUF → MODEL_MISSING, audio+ASR stay exportable (P10.8).
+                    container.dispatcher.registerLlmEngine(container.llmEngine)
+                } catch (e: Exception) {
+                    Log.w(TAG, "LLM engine registration deferred", e)
+                }
                 container.dispatcher.start()
             } catch (e: Exception) {
                 // Reconciliation must never crash startup; P8 surfaces

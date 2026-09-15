@@ -8,13 +8,15 @@ verified dataset ZIP for Mac review.
 See `plan.md` (implementation plan), `todos.md` (execution checklist),
 `DECISIONS.md` (pinned decisions), and `docs/ARCHITECTURE.md` (overview).
 
-## Status: P1 skeleton
+## Status: P10 (P8 UX + P9 export + P10 LLM seams)
 
-Buildable offline-capable shell: navigation for Home, New Session, Recording,
-Summary, Export, Recovery, Errors, Diagnostics; permission + notification
-scaffolding; manual DI + ViewModels; Material3 theme with dark mode;
-hi/en/mr string resources; CMake/NDK stub layout. No recording, ASR, or
-export logic yet (P2+).
+Offline capture → durable queue → ASR/LLM → verified export, all on-device:
+Home/New/Recording (72dp Stop, sticky hi|en|mr, verified mic + timer) →
+Summary/Recovery/Errors (retry, resumable session, nav-locked recording) →
+SAF/file export (`manifest.v2.json + records.jsonl + audio/asr/annotation +
+events + checksums`, temp build + reopen-ZIP `VERIFIED`) → optional GGUF
+annotation (`AI_SUGGESTION` + evidence spans, `insufficient_audio_evidence`
+fallback keeps audio+ASR exportable). 107 unit tests green; no `INTERNET`.
 
 ## Toolchain (pinned, see DECISIONS.md D7)
 

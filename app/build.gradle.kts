@@ -16,8 +16,8 @@ android {
         applicationId = "com.scraper.classroomcapture"
         minSdk = 29
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.4.0-p7"
+        versionCode = 5
+        versionName = "0.5.0-p10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

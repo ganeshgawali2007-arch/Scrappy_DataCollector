@@ -288,6 +288,29 @@ Legal transitions enforced by a single validator component (P2.3):
 - `WhisperAsrEngine` policy: hi|en|mr gate → WAV gate → model gate → load → transcribe; native Throwables → `INFERENCE_FAILED` (retryable), OOM → `OUT_OF_MEMORY`; records `AsrDiagnostics` (RTF). Missing/corrupt → permanent `MODEL_*`, surfaced in P8 without blocking capture/export.
 - Fixtures are synthetic (never accuracy claims); field WER/CER + tiny/base/small benchmark pending the 2023 phone.
 
+## D24. Session UX (P8, 2026-09-15)
+
+- Home/New Session with essential metadata only (D9 pseudocodes, consent ack required, `SessionFormValidator` pure + tested); resumable `Continue session` ahead of new-session; storage-low + model-missing banners (capture never blocked).
+- Recording: 72dp Stop / 56dp Start, sticky hi|en|mr, verified live input + preference chooser (never claims unverified route), monotonic `formatElapsedMs` timer, level meter + sustained-clip warning, saved/pending counts from DB rows.
+- Summary: saved/ready/pending/failed counts + `Audio saved · Transcription unavailable` retry guidance; export never blocked by derived-output failure.
+- Recovery: `RecoveryReport` (recovered/error ids + resumable session) + event log; Errors lists ERROR samples with Retry (`ERROR → QUEUED_ASR/LLM`).
+- P8.5: nav locked to Recording while capturing; rotation-safe via ViewModels (DB is source of truth after process death).
+
+## D25. Export engine (P9, 2026-09-15)
+
+- ZIP layout `manifest.v2.json + records.jsonl + records/*.v2.json + audio/*.wav + asr/*.v1.json + annotation/*.v1.json + events.jsonl + models.json + translation/tts/eval placeholders` (see `docs/EXPORT_FORMAT.md`); streaming 64KB copies, never whole-session in RAM.
+- Preflight blocks on `AUDIO_MISSING/UNREADABLE/CHECKSUM_MISMATCH` with per-sample codes; ASR/LLM optional (invariant 4).
+- Temp build + reopen-ZIP verify (entries/checksums/counts/schema) before finalize; File/SAF-with-read-back → `VERIFIED`, SAF-without-read-back → `WRITTEN_UNVERIFIED` (D17, never mislabeled).
+- `ExportRecord` per export (PREPARING→WRITING→CHECKING→SUCCEEDED/FAILED); re-export refuses existing filenames; interrupted exports FAILED + temp cleanup; source never modified/deleted.
+
+## D26. Local LLM annotation (P10, 2026-09-15)
+
+- `GgufRegistry` (`*.gguf + *.json`, SHA-verify, default `schema-gen`) + `JniLlamaBridge` stub (`nativeIsLlamaAvailable=false`) + `LocalLlmEngine` (`LlmEngine` seam, IO thread, concurrency 1, recording priority).
+- `PromptTemplate annotation-prompt.v1` (512 tokens, temp 0.0); output persists `generated_by=AI_SUGGESTION:<model>` + `model_version` + `prompt_version` (see `docs/LOCAL_LLM.md`).
+- `AnnotationValidator` strict JSON + Vocab + grounded evidence spans (exact transcript substring); malformed/ungrounded → `OUTPUT_REJECTED`; empty/<3 chars or sentinel → `insufficient_audio_evidence` (`INPUT_INVALID`, permanent).
+- Dispatcher reuses P6 lease/retry/idempotency; permanent LLM failure → `TRANSCRIBED → READY_FOR_EXPORT` + `LLM_FAILED_EXPORTABLE` (audio+ASR exportable, P10.8).
+- llama.cpp revision still TBD after ASR gate (candidate `ggerganov/llama.cpp`, MIT); weights never in git.
+
 ## Open items / TODOs
 
 - [ ] Record exact 2023 phone fingerprint on first connection (D2.2).

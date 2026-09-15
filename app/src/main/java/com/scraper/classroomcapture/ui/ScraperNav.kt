@@ -48,6 +48,7 @@ fun ScreenScaffold(
     titleRes: Int,
     status: String,
     onNavigate: (String) -> Unit,
+    navEnabled: Boolean = true,
     body: @Composable () -> Unit = {},
 ) {
     Column(
@@ -61,12 +62,15 @@ fun ScreenScaffold(
         Text(text = stringResource(titleRes), style = MaterialTheme.typography.headlineMedium)
         Text(text = status, style = MaterialTheme.typography.bodySmall)
         body()
-        NavButtons(onNavigate)
+        NavButtons(onNavigate, enabled = navEnabled)
     }
 }
 
 @Composable
-private fun NavButtons(onNavigate: (String) -> Unit) {
+private fun NavButtons(
+    onNavigate: (String) -> Unit,
+    enabled: Boolean = true,
+) {
     val destinations =
         listOf(
             Routes.HOME to R.string.nav_home,
@@ -81,6 +85,9 @@ private fun NavButtons(onNavigate: (String) -> Unit) {
     destinations.forEach { (route, label) ->
         Button(
             onClick = { onNavigate(route) },
+            // P8.5: while recording, only the Recording destination stays
+            // enabled — prevents unsafe navigation mid-capture.
+            enabled = enabled || route == Routes.RECORDING,
             modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
         ) {
             Text(stringResource(label))

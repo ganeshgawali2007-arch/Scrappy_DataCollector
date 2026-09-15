@@ -37,9 +37,17 @@ Evaluate on the actual 2023 phone with classroom-style hi/en/mr recordings:
 ## llama.cpp (LLM annotation, P10)
 
 - **Pinned revision:** `TBD — after the ASR field gate passes` (plan §9).
+  Seams land now (P10 gate): `llm/` Kotlin + `nativeIsLlamaAvailable=false`
+  stub (see `app/src/main/cpp/native-lib.cpp`); no vendored C++ yet.
 - **Candidate upstream:** `ggerganov/llama.cpp` (MIT license).
-- **Weights:** GGUF via the same file-picker + SHA-256 flow as ASR (D15).
-- `JniLlamaBridge.nativeIsLlamaAvailable` stub returns false until vendoring.
+- **Weights:** GGUF via the same file-picker + SHA-256 flow as ASR (D15):
+  `filesDir/scrappy/models/<modelId>.gguf + <modelId>.json`, default id
+  `schema-gen`, SHA-256 + byte-size verified on install and on status.
+- `JniLlamaBridge.nativeIsLlamaAvailable` stub returns false until vendoring;
+  jobs fail as `MODEL_MISSING` (permanent) without blocking capture/export.
+- **Provenance to record on vendoring:** exact commit SHA, checkout date,
+  patches, CMake flags, NDK r27c build log, ABI (`arm64-v8a` release),
+  `SHA-256` of `libscraper_native.so` + GGUF files (same as whisper §).
 
 ## Storage
 

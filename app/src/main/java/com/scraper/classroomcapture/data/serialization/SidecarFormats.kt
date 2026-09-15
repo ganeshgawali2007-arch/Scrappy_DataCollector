@@ -67,6 +67,8 @@ data class AnnotationResultV1(
     val generatedBy: String,
     @SerialName("model_version")
     val modelVersion: String? = null,
+    @SerialName("prompt_version")
+    val promptVersion: String? = null,
     @SerialName("created_at")
     val createdAt: String,
 )
