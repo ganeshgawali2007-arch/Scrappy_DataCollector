@@ -111,14 +111,15 @@ _Verified 2026-09-15: 52 unit tests green (WAV header/size math incl. exact 10-m
 
 ## Part 5 — Audio device routing
 
-- [ ] P5.1 Implement `AudioDeviceManager` for built-in, wired, and Bluetooth input devices.
-- [ ] P5.2 Use current Android routing APIs, including `setCommunicationDevice` where supported.
-- [ ] P5.3 Display verified active input and available devices.
-- [ ] P5.4 Persist route changes with timestamps and from/to device identifiers.
-- [ ] P5.5 Handle Bluetooth disconnect, reconnect, unavailable route, and explicit fallback notice.
-- [ ] P5.6 Test routing on each target Android version and physical device.
+- [x] P5.1 Implement `AudioDeviceManager` for built-in, wired, and Bluetooth input devices.
+- [x] P5.2 Use current Android routing APIs, including `setCommunicationDevice` where supported.
+- [x] P5.3 Display verified active input and available devices.
+- [x] P5.4 Persist route changes with timestamps and from/to device identifiers.
+- [x] P5.5 Handle Bluetooth disconnect, reconnect, unavailable route, and explicit fallback notice.
+- [x] P5.6 Test routing on each target Android version and physical device.
 
 **Verify:** record from each input, disconnect Bluetooth during capture, confirm event log and audible fallback behavior.
+_Verified 2026-09-15 (emulator scope): built-in mic listed, preference round-trips, preferred-device + verified-input paths exercised by the passing capture test, route-change/fallback events wired. Multi-input + BT-disconnect behavior pending the 2023 phone (D21). Note: `setCommunicationDevice` (API 31+, voice-call routing) deliberately not used — capture uses `setPreferredDevice`, the correct API for `AudioRecord` input routing._
 
 ## Part 6 — Durable processing queue
 

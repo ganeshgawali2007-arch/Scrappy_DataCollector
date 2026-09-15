@@ -143,6 +143,17 @@ class FakeSampleRepository : SampleRepository {
             samples[id] = it.copy(recordedStart = start, recordedEnd = end, updatedAt = now)
         }
     }
+
+    override suspend fun setInputDevice(
+        id: String,
+        device: String,
+        now: Long,
+    ) {
+        samples[id]?.let {
+            writes++
+            samples[id] = it.copy(inputDevice = device, updatedAt = now)
+        }
+    }
 }
 
 class FakeArtifactRepository : ArtifactRepository {

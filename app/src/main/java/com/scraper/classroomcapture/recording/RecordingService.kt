@@ -22,6 +22,8 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.scraper.classroomcapture.BuildConfig
 import com.scraper.classroomcapture.R
+import com.scraper.classroomcapture.audio.AudioDeviceManager
+import com.scraper.classroomcapture.audio.AudioInput
 import com.scraper.classroomcapture.data.repository.ArtifactRepository
 import com.scraper.classroomcapture.data.repository.EventRepository
 import com.scraper.classroomcapture.data.repository.JobRepository
@@ -78,6 +80,7 @@ class RecordingService : Service() {
     private lateinit var jobs: JobRepository
     private lateinit var events: EventRepository
     private lateinit var store: ArtifactStore
+    private lateinit var audioDevices: AudioDeviceManager
 
     private val recorderDispatcher =
         Executors.newSingleThreadExecutor { runnable ->
@@ -103,6 +106,8 @@ class RecordingService : Service() {
         jobs = container.jobRepository
         events = container.eventRepository
         store = container.artifactStore
+        audioDevices = container.audioDevices
+        audioDevices.register()
     }
 
     override fun onBind(intent: Intent?): IBinder = binder
@@ -134,6 +139,11 @@ class RecordingService : Service() {
 
     override fun onDestroy() {
         stopRequested.set(true)
+        try {
+            audioDevices.unregister()
+        } catch (e: Exception) {
+            // Container may be gone in tests; nothing to do.
+        }
         serviceScope.cancel()
         recorderDispatcher.close()
         releaseWakeLock()
@@ -174,6 +184,16 @@ class RecordingService : Service() {
             }
             acquireWakeLock()
             val startedAt = SystemClock.uptimeMillis()
+            val routeWatch =
+                serviceScope.launch {
+                    audioDevices.routeEvents.collect { change ->
+                        if (change == null) return@collect
+                        logEvent("ROUTE_CHANGED", "${change.fromId} -> ${change.toId} (${change.reason})")
+                        if (change.reason == "bluetooth_disconnected") {
+                            logEvent("BLUETOOTH_LOST_FALLBACK", "Capture continues on the platform route.")
+                        }
+                    }
+                }
             ServiceCompat.startForeground(
                 this,
                 NOTIFICATION_ID,
@@ -186,6 +206,7 @@ class RecordingService : Service() {
                 recordOneSegment(sessionId, currentLanguage ?: language, savedBefore, startedAt)
             } while (segmentRequested.get())
             if (status.value.errorCode == null) status.value = RecordingStatus.Idle
+            routeWatch.cancel()
             stopForegroundAndSelf()
         } finally {
             releaseWakeLock()
@@ -272,6 +293,8 @@ class RecordingService : Service() {
         notifyStatus(startedAt)
         try {
             recorder.startRecording()
+            applyPreferredDevice(recorder)
+            verifyActiveInput(sampleId, recorder)
             val written =
                 store.writeAtomicFile(audioPath) { tmp ->
                     val writer = WavStreamWriter(tmp)
@@ -412,6 +435,42 @@ class RecordingService : Service() {
             AudioRecord.ERROR_DEAD_OBJECT -> CaptureErrorCodes.MIC_BUSY
             else -> CaptureErrorCodes.MIC_READ_FAILED
         }
+
+    // Routes capture to the operator's chosen mic when still plugged in;
+    // otherwise the platform routes (P5.2). Never fails the run.
+    private fun applyPreferredDevice(recorder: AudioRecord) {
+        try {
+            val preferred = audioDevices.getPreferredId() ?: return
+            val device = audioDevices.findDevice(preferred) ?: return
+            recorder.preferredDevice = device
+            serviceScope.launch { logEvent("ROUTE_PREFERRED_APPLIED", preferred) }
+        } catch (e: Exception) {
+            Log.w(TAG, "preferred device failed; platform routing stands", e)
+        }
+    }
+
+    // The verified live input (P5.3): what AudioRecord actually routes from,
+    // persisted on the sample row for the summary screen and the export.
+    private fun verifyActiveInput(
+        sampleId: String,
+        recorder: AudioRecord,
+    ) {
+        try {
+            val routed = recorder.routedDevice
+            val id =
+                if (routed != null) {
+                    AudioInput.stableId(routed.type, routed.address ?: "")
+                } else {
+                    AudioInput.ID_UNKNOWN
+                }
+            serviceScope.launch {
+                samples.setInputDevice(sampleId, id, System.currentTimeMillis())
+                logEvent("INPUT_VERIFIED", id)
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "routed device unreadable", e)
+        }
+    }
 
     private fun hasMicPermission(): Boolean =
         ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) ==

@@ -97,6 +97,13 @@ interface SampleRepository {
         end: Long,
         now: Long,
     )
+
+    // Verified live input, written once capture starts (P5.3).
+    suspend fun setInputDevice(
+        id: String,
+        device: String,
+        now: Long,
+    )
 }
 
 interface ArtifactRepository {
@@ -272,6 +279,14 @@ class RoomSampleRepository(private val dao: SampleDao) : SampleRepository {
         now: Long,
     ) {
         dao.setRecordingWindow(id, start, end, now)
+    }
+
+    override suspend fun setInputDevice(
+        id: String,
+        device: String,
+        now: Long,
+    ) {
+        dao.setInputDevice(id, device, now)
     }
 }
 

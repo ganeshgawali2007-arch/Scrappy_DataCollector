@@ -259,6 +259,13 @@ Legal transitions enforced by a single validator component (P2.3):
 - Interrupts (mic busy/revoked/read errors/empty capture) finalize partial audio when frames exist, else quarantine + ERROR — completed samples are never lost.
 - Notification uses a system mic glyph until the P8 brand icon lands; chronometer shows elapsed time without polling.
 
+## D21. Audio routing (P5, 2026-09-15)
+
+- `AudioDeviceManager`: inventory via platform input devices (built-in first), operator preference in private prefs (device id only), route-change flow.
+- Service applies the preferred device when still present, else platform routing; the *verified* live input (`AudioRecord.getRoutedDevice`) is persisted on the sample row for summary/export.
+- Route changes log `ROUTE_CHANGED` with from/to; Bluetooth loss logs an explicit fallback notice and capture continues — never silently stops.
+- P5.6 multi-version/physical-device matrix is pending the 2023 phone; emulator covers built-in mic only.
+
 ## Open items / TODOs
 
 - [ ] Record exact 2023 phone fingerprint on first connection (D2.2).

@@ -106,6 +106,13 @@ interface SampleDao {
         updatedAt: Long,
     )
 
+    @Query("UPDATE samples SET inputDevice = :device, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun setInputDevice(
+        id: String,
+        device: String,
+        updatedAt: Long,
+    )
+
     @Query(
         "UPDATE samples SET q_rmsDb = :rmsDb, q_peakDb = :peakDb, " +
             "q_clippingDetected = :clipping, q_silenceRatio = :silenceRatio, " +

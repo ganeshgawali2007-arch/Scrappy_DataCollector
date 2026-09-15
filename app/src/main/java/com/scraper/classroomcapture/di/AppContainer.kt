@@ -3,6 +3,7 @@ package com.scraper.classroomcapture.di
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.scraper.classroomcapture.audio.AudioDeviceManager
 import com.scraper.classroomcapture.data.local.ScraperDatabase
 import com.scraper.classroomcapture.data.repository.ArtifactRepository
 import com.scraper.classroomcapture.data.repository.EventRepository
@@ -46,6 +47,7 @@ interface AppContainer {
     val artifactStore: ArtifactStore
     val reconciler: Reconciler
     val recordingController: RecordingController
+    val audioDevices: AudioDeviceManager
 
     fun viewModelFactory(): ViewModelProvider.Factory
 }
@@ -79,6 +81,9 @@ class DefaultAppContainer(override val appContext: Context) : AppContainer {
     }
     override val recordingController: RecordingController by lazy {
         RecordingController(appContext)
+    }
+    override val audioDevices: AudioDeviceManager by lazy {
+        AudioDeviceManager(appContext)
     }
 
     override fun viewModelFactory(): ViewModelProvider.Factory =
