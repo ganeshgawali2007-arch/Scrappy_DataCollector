@@ -123,15 +123,16 @@ _Verified 2026-09-15 (emulator scope): built-in mic listed, preference round-tri
 
 ## Part 6 — Durable processing queue
 
-- [ ] P6.1 Implement database-backed ASR and annotation jobs with unique sample keys.
-- [ ] P6.2 Implement atomic claim, lease expiry, heartbeat, cancellation, and stale-job reclaim.
-- [ ] P6.3 Implement bounded concurrency, recording priority, and configurable one-job native inference baseline.
-- [ ] P6.4 Implement retry classification, exponential backoff, and permanent-error handling.
-- [ ] P6.5 Make workers idempotent based on input checksum and model identity.
-- [ ] P6.6 Expose queue depth, pending, processing, completed, and failed counts.
-- [ ] P6.7 Ensure processing never blocks starting the next recording.
+- [x] P6.1 Implement database-backed ASR and annotation jobs with unique sample keys.
+- [x] P6.2 Implement atomic claim, lease expiry, heartbeat, cancellation, and stale-job reclaim.
+- [x] P6.3 Implement bounded concurrency, recording priority, and configurable one-job native inference baseline.
+- [x] P6.4 Implement retry classification, exponential backoff, and permanent-error handling.
+- [x] P6.5 Make workers idempotent based on input checksum and model identity.
+- [x] P6.6 Expose queue depth, pending, processing, completed, and failed counts.
+- [x] P6.7 Ensure processing never blocks starting the next recording.
 
 **Verify:** kill the process during each queue stage; jobs resume without duplicate or lost output.
+_Verified 2026-09-15: 71 unit tests green (dispatcher 9/9 incl. success/idempotent-skip/checksum-gate/retry-backoff/permanent-fail/lease-reclaim/LLM-exportable/recording-priority/unique-key, RetryPolicy 4/4, state-machine 10/10 with new P6 retry/fallback edges); `assembleDebug` + `lintDebug` + `ktlintCheck` clean; Room v2 migration 1→2 (unique sample+kind) with migration test; offline gate passes (no INTERNET)._
 
 ## Part 7 — whisper.cpp ASR
 

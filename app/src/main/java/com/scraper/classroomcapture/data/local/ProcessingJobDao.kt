@@ -66,4 +66,28 @@ interface ProcessingJobDao {
 
     @Query("SELECT * FROM processing_jobs WHERE state = 'RUNNING' AND leaseExpiresAt <= :now")
     suspend fun getExpiredLeases(now: Long): List<ProcessingJobEntity>
+
+    @Query("SELECT * FROM processing_jobs WHERE kind = :kind AND state = 'RUNNING' AND leaseExpiresAt <= :now")
+    suspend fun getExpiredLeasesByKind(
+        kind: JobKind,
+        now: Long,
+    ): List<ProcessingJobEntity>
+
+    @Query("SELECT COUNT(*) FROM processing_jobs WHERE kind = :kind AND state IN (:states)")
+    suspend fun countByKindAndStates(
+        kind: JobKind,
+        states: List<JobState>,
+    ): Int
+
+    @Query("SELECT * FROM processing_jobs WHERE sampleId = :sampleId AND kind = :kind")
+    suspend fun getBySampleAndKind(
+        sampleId: String,
+        kind: JobKind,
+    ): ProcessingJobEntity?
+
+    @Query("UPDATE processing_jobs SET state = 'QUEUED', leaseOwner = NULL, leaseExpiresAt = NULL, updatedAt = :now WHERE id = :id")
+    suspend fun requeue(
+        id: String,
+        now: Long,
+    )
 }

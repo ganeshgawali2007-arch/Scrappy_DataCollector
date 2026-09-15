@@ -22,6 +22,10 @@ import com.scraper.classroomcapture.domain.model.JobState
     indices = [
         Index("sampleId"),
         Index(value = ["kind", "state"]),
+        // One job row per (sample, kind) for the life of the sample (P6.1):
+        // retries reuse the row (attemptCount grows), so a crash can never
+        // duplicate work and reclaim always finds a single row.
+        Index(value = ["sampleId", "kind"], unique = true),
     ],
 )
 data class ProcessingJobEntity(

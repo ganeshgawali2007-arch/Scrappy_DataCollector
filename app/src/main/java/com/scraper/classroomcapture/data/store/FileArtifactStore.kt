@@ -181,6 +181,10 @@ class FileArtifactStore(
 
     override fun storageStats(): StorageStats = StorageStats(root.usableSpace, root.totalSpace)
 
+    // Engine bridge (P6/P7/P10): resolves a validated relative path to the
+    // file engines read. Path validation is identical to every other access.
+    fun fileFor(relativePath: String): File = StorePaths.resolve(root, relativePath)
+
     override fun checkPreflight(neededBytes: Long): PreflightResult = StoragePreflight.check(freeSpace.freeBytes(root), neededBytes)
 
     private fun hashOf(file: File): FileHash {

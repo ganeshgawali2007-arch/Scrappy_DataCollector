@@ -201,6 +201,11 @@ Legal transitions enforced by a single validator component (P2.3):
 - `READY_FOR_EXPORT → EXPORTED` (export completes)
 - Any processing state → `ERROR` (retryable or permanent)
 - `ERROR → QUEUED_ASR` or `ERROR → QUEUED_LLM` (retry)
+- P6 retry (no ERROR hop, operator sees QUEUED while backing off):
+  - `TRANSCRIBING → QUEUED_ASR` (retryable ASR failure)
+  - `ANNOTATING → QUEUED_LLM` (retryable LLM failure)
+- P6/P10.8 fallback (audio + ASR stay exportable on permanent LLM failure):
+  - `ANNOTATING → TRANSCRIBED`, then `TRANSCRIBED → READY_FOR_EXPORT`
 - `RECOVERED → AUDIO_SAVED` or `RECOVERED → QUEUED_ASR` or `RECOVERED → ERROR`
 - `RECOVERED` is entered **only** by startup reconciliation; retains `recoveryReason`, `recoveredAt`, and prior observed state.
 - `RECOVERED` never transitions directly to `EXPORTED`.
@@ -265,6 +270,16 @@ Legal transitions enforced by a single validator component (P2.3):
 - Service applies the preferred device when still present, else platform routing; the *verified* live input (`AudioRecord.getRoutedDevice`) is persisted on the sample row for summary/export.
 - Route changes log `ROUTE_CHANGED` with from/to; Bluetooth loss logs an explicit fallback notice and capture continues — never silently stops.
 - P5.6 multi-version/physical-device matrix is pending the 2023 phone; emulator covers built-in mic only.
+
+## D22. Durable processing queue (P6, 2026-09-15)
+
+- DB-backed jobs with unique `(sampleId, kind)` (Room v2 migration 1→2); retries reuse the row, `attemptCount` grows, crash can never duplicate work.
+- Atomic claim (`QUEUED → RUNNING` conditional update) + 10-min lease + heartbeat; startup reclaims expired leases and logs `LEASES_RECLAIMED`.
+- One job per kind at a time (native baseline, P6.3); loops idle while `recordingActive()` (recording priority, P6.7) and when the engine for that kind is unregistered (ASR P7, LLM P10).
+- Retry: `INFERENCE_FAILED`/`OUT_OF_MEMORY` retryable with 30s→60s→…→30min backoff; model/input/output errors permanent. Retry requeues to `QUEUED_*` (D14 P6 edges), permanent ASR failure → `ERROR`, permanent LLM failure → `TRANSCRIBED → READY_FOR_EXPORT` (audio+ASR exportable, P10.8).
+- Idempotency (P6.5): audio SHA-256 re-verified before every run; existing `asr.v1.json`/`annotation.v1.json` sidecar adopted instead of re-run; sidecars written atomically via `ArtifactStore`.
+- `QueueStats` flow exposes pending/running/done/failed per kind (P6.6, wired to P8 UI).
+- Fixed in gate: claim snapshot is re-read after `claim()` so `attemptCount` survives `finish()`; added `TRANSCRIBING→QUEUED_ASR`, `ANNOTATING→QUEUED_LLM`, `ANNOTATING→TRANSCRIBED` edges (see D14).
 
 ## Open items / TODOs
 

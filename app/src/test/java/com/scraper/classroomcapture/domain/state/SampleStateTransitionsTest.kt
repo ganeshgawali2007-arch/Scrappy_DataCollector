@@ -58,6 +58,20 @@ class SampleStateTransitionsTest {
     }
 
     @Test
+    fun `retry requeues without error`() {
+        // P6: retryable engine failures back off in QUEUED, not ERROR.
+        assertTrue(SampleStateTransitions.isLegal(SampleState.TRANSCRIBING, SampleState.QUEUED_ASR))
+        assertTrue(SampleStateTransitions.isLegal(SampleState.ANNOTATING, SampleState.QUEUED_LLM))
+    }
+
+    @Test
+    fun `permanent llm failure falls back to transcribed`() {
+        // P6/P10.8: audio + ASR stay exportable when the LLM fails permanently.
+        assertTrue(SampleStateTransitions.isLegal(SampleState.ANNOTATING, SampleState.TRANSCRIBED))
+        assertTrue(SampleStateTransitions.isLegal(SampleState.TRANSCRIBED, SampleState.READY_FOR_EXPORT))
+    }
+
+    @Test
     fun `recovered exits are limited to audio saved queued asr or error`() {
         assertTrue(SampleStateTransitions.isLegal(SampleState.RECOVERED, SampleState.AUDIO_SAVED))
         assertTrue(SampleStateTransitions.isLegal(SampleState.RECOVERED, SampleState.QUEUED_ASR))

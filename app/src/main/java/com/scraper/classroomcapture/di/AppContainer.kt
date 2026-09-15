@@ -20,7 +20,9 @@ import com.scraper.classroomcapture.data.repository.SessionRepository
 import com.scraper.classroomcapture.data.store.ArtifactStore
 import com.scraper.classroomcapture.data.store.FileArtifactStore
 import com.scraper.classroomcapture.data.store.Reconciler
+import com.scraper.classroomcapture.processing.ProcessingDispatcher
 import com.scraper.classroomcapture.recording.RecordingController
+import com.scraper.classroomcapture.recording.RecordingStatus
 import com.scraper.classroomcapture.ui.viewmodel.DiagnosticsViewModel
 import com.scraper.classroomcapture.ui.viewmodel.ErrorsViewModel
 import com.scraper.classroomcapture.ui.viewmodel.ExportViewModel
@@ -48,6 +50,7 @@ interface AppContainer {
     val reconciler: Reconciler
     val recordingController: RecordingController
     val audioDevices: AudioDeviceManager
+    val dispatcher: ProcessingDispatcher
 
     fun viewModelFactory(): ViewModelProvider.Factory
 }
@@ -84,6 +87,24 @@ class DefaultAppContainer(override val appContext: Context) : AppContainer {
     }
     override val audioDevices: AudioDeviceManager by lazy {
         AudioDeviceManager(appContext)
+    }
+    override val dispatcher: ProcessingDispatcher by lazy {
+        ProcessingDispatcher(
+            samples = sampleRepository,
+            artifacts = artifactRepository,
+            jobs = jobRepository,
+            events = eventRepository,
+            store = artifactStore,
+            recordingActive = {
+                recordingController.status.value.phase == RecordingStatus.Phase.RECORDING
+            },
+            appVersion =
+                try {
+                    appContext.packageManager.getPackageInfo(appContext.packageName, 0).versionName ?: "0.0.0"
+                } catch (e: Exception) {
+                    "0.0.0"
+                },
+        )
     }
 
     override fun viewModelFactory(): ViewModelProvider.Factory =

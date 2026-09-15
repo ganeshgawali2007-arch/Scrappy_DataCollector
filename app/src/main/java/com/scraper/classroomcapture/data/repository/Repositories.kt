@@ -146,6 +146,26 @@ interface JobRepository {
         job: ProcessingJob,
         now: Long,
     )
+
+    suspend fun getBySampleAndKind(
+        sampleId: String,
+        kind: JobKind,
+    ): ProcessingJob?
+
+    suspend fun requeue(
+        id: String,
+        now: Long,
+    )
+
+    suspend fun getExpiredLeases(
+        kind: JobKind,
+        now: Long,
+    ): List<ProcessingJob>
+
+    suspend fun countByKindAndStates(
+        kind: JobKind,
+        states: List<JobState>,
+    ): Int
 }
 
 interface EventRepository {
@@ -339,6 +359,28 @@ class RoomJobRepository(private val dao: ProcessingJobDao) : JobRepository {
     ) {
         dao.update(job.copy(updatedAt = now).toEntity())
     }
+
+    override suspend fun getBySampleAndKind(
+        sampleId: String,
+        kind: JobKind,
+    ): ProcessingJob? = dao.getBySampleAndKind(sampleId, kind)?.toDomain()
+
+    override suspend fun requeue(
+        id: String,
+        now: Long,
+    ) {
+        dao.requeue(id, now)
+    }
+
+    override suspend fun getExpiredLeases(
+        kind: JobKind,
+        now: Long,
+    ): List<ProcessingJob> = dao.getExpiredLeasesByKind(kind, now).map { it.toDomain() }
+
+    override suspend fun countByKindAndStates(
+        kind: JobKind,
+        states: List<JobState>,
+    ): Int = dao.countByKindAndStates(kind, states)
 }
 
 class RoomEventRepository(private val dao: DeviceEventDao) : EventRepository {

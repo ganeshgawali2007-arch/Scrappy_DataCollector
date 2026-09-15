@@ -15,10 +15,16 @@ object SampleStateTransitions {
             SampleState.SAVING to setOf(SampleState.AUDIO_SAVED, SampleState.ERROR),
             SampleState.AUDIO_SAVED to setOf(SampleState.QUEUED_ASR),
             SampleState.QUEUED_ASR to setOf(SampleState.TRANSCRIBING, SampleState.ERROR),
-            SampleState.TRANSCRIBING to setOf(SampleState.TRANSCRIBED, SampleState.ERROR),
+            // P6 retry: a retryable engine failure requeues without going
+            // through ERROR so the operator sees QUEUED (not ERROR) while
+            // backing off. Permanent failures still use -> ERROR.
+            SampleState.TRANSCRIBING to setOf(SampleState.TRANSCRIBED, SampleState.QUEUED_ASR, SampleState.ERROR),
             SampleState.TRANSCRIBED to setOf(SampleState.QUEUED_LLM, SampleState.READY_FOR_EXPORT),
             SampleState.QUEUED_LLM to setOf(SampleState.ANNOTATING, SampleState.ERROR),
-            SampleState.ANNOTATING to setOf(SampleState.ANNOTATED, SampleState.ERROR),
+            // P6/P10: ANNOTATING -> QUEUED_LLM is LLM retry; ANNOTATING ->
+            // TRANSCRIBED is the permanent-LLM-failure fallback that keeps
+            // audio + ASR exportable (plan invariant 4, P10.8).
+            SampleState.ANNOTATING to setOf(SampleState.ANNOTATED, SampleState.QUEUED_LLM, SampleState.TRANSCRIBED, SampleState.ERROR),
             SampleState.ANNOTATED to setOf(SampleState.READY_FOR_EXPORT),
             SampleState.READY_FOR_EXPORT to setOf(SampleState.EXPORTED),
             SampleState.EXPORTED to emptySet(),

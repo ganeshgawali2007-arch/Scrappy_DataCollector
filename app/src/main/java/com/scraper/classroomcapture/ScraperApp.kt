@@ -51,6 +51,9 @@ class ScraperApp : Application() {
                     ),
                 )
                 if (!report.isClean()) Log.i(TAG, "Reconciliation: $report")
+                // Engines register later (ASR in P7, LLM in P10); until then
+                // the loops idle. Recording priority is enforced in P6.7.
+                container.dispatcher.start()
             } catch (e: Exception) {
                 // Reconciliation must never crash startup; P8 surfaces
                 // persistent failures from the report/event log instead.
