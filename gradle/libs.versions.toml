@@ -11,9 +11,9 @@ ktlint = "12.1.1"
 room = "2.6.1"
 ksp = "2.0.21-1.0.28"
 junit4 = "4.13.2"
-testRunner = "1.6.2"
-testRules = "1.6.1"
-testExtJunit = "1.2.1"
+testRunner = "1.7.0"
+testRules = "1.7.0"
+testExtJunit = "1.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
