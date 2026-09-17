@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ochre microphone glyph, centered in the adaptive-icon safe zone (66/108). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Capsule head -->
+    <path
+        android:fillColor="#C69A35"
+        android:pathData="M54,30 A11,11 0 0,1 65,41 L65,55 A11,11 0 0,1 43,55 L43,41 A11,11 0 0,1 54,30 Z" />
+    <!-- Cradle arc -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#C69A35"
+        android:strokeWidth="3.5"
+        android:pathData="M38,50 A16,16 0 0,0 70,50" />
+    <!-- Stem + base -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#C69A35"
+        android:strokeWidth="3.5"
+        android:pathData="M54,66 L54,76" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#C69A35"
+        android:strokeWidth="3.5"
+        android:pathData="M46,76 L62,76" />
+</vector>

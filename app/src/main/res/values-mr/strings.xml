@@ -20,8 +20,15 @@
     <string name="status_prefix">स्थिती: %1$s</string>
     <string name="action_new_session">नवीन सत्र</string>
     <string name="action_start_session">सत्र सुरू करा (स्टब)</string>
+    <string name="action_back">परत जा</string>
     <string name="action_request_mic">मायक्रोफोन परवानगी मागा</string>
     <string name="action_start_stop_stub">सुरू / थांबवा (P4 सेवा)</string>
+    <string name="action_continue_session">सत्र सुरू ठेवा</string>
+    <string name="action_open_summary">सत्र आढावा</string>
+    <string name="action_open_export">निर्यात</string>
+    <string name="action_open_recovery">पुनर्प्राप्ती</string>
+    <string name="action_open_errors">त्रुटी</string>
+    <string name="action_open_diagnostics">निदान व मॉडेल</string>
     <string name="new_session_hint">इयत्ता, विषय, छद्म कोड, डिफॉल्ट भाषा, नोंदी, संमती. खरी नावे नकोत.</string>
 
     <string name="field_grade">इयत्ता</string>

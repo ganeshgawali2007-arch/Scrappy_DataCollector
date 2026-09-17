@@ -1,9 +1,10 @@
-name: ci
+name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
   build:
@@ -20,36 +21,110 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          api-level: 35
+          ndk-version: r27c
+          cmake-version: 3.22.1
+          build-tools-version: 35.0.1
 
-      - name: Accept licenses + install platform 35, build-tools 35.0.1, NDK r27c, CMake 3.22.1
-        run: |
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.1" "ndk;27.2.12479018" "cmake;3.22.1"
+      - name: Accept licenses
+        run: yes | sdkmanager --licenses
+
+      - name: Grant gradlew execute permission
+        run: chmod +x gradlew
 
       - name: Offline gate — production manifest must not request INTERNET
         run: |
-          if grep -r "android.permission.INTERNET" app/src/main/AndroidManifest.xml; then
-            echo "FAIL: INTERNET permission found in production manifest (P0.6 gate)"; exit 1
+          if grep -q "INTERNET" app/src/main/AndroidManifest.xml; then
+            echo "❌ INTERNET permission found in production manifest"
+            exit 1
           fi
-          echo "Offline gate passed: no INTERNET permission."
+          echo "✅ No INTERNET permission"
 
-      - name: Schema validation placeholder (P2/P9 adds JSON schemas)
-        run: |
-          if [ -d "schemas" ]; then
-            echo "Validating schemas in ./schemas (hook for P2/P9)."
-            ls schemas
-          else
-            echo "No schemas/ dir yet (expected in P1) — skipping."
-          fi
-
-      - name: Format check (ktlint)
-        run: ./gradlew ktlintCheck --stacktrace
-
-      - name: Debug build
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Lint
-        run: ./gradlew lintDebug --stacktrace
+      - name: Ktlint
+        run: ./gradlew ktlintCheck --no-daemon
 
       - name: Unit tests
-        run: ./gradlew testDebugUnitTest --stacktrace
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+      - name: Lint
+        run: ./gradlew lintDebug --no-daemon
+
+      - name: Assemble debug
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Assemble release (unsigned in CI)
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload release APK (unsigned)
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-unsigned
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
+
+  # Release job — only runs on tagged commits
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 35
+          ndk-version: r27c
+          cmake-version: 3.22.1
+          build-tools-version: 35.0.1
+
+      - name: Accept licenses
+        run: yes | sdkmanager --licenses
+
+      - name: Grant gradlew execute permission
+        run: chmod +x gradlew
+
+      - name: Configure release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > keystore/scrappy-release.jks
+          cat > keystore.properties <<EOF
+          storeFile=keystore/scrappy-release.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+
+      - name: Build signed release
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Upload signed release
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-signed
+          path: app/build/outputs/apk/release/app-release.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/outputs/apk/release/app-release.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

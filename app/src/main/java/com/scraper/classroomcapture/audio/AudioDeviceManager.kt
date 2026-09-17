@@ -58,13 +58,22 @@ class AudioDeviceManager(context: Context) {
                 ?.getDevices(AudioManager.GET_DEVICES_INPUTS)
                 ?.filter { it.isSource }
                 .orEmpty()
-        return devices.map { info ->
-            AudioInput(
-                id = AudioInput.stableId(info.type, info.address ?: ""),
-                name = info.productName?.toString()?.ifBlank { null } ?: fallbackName(info.type),
-                type = AudioInput.mapType(info.type),
-            )
-        }.sortedBy { if (it.id == AudioInput.ID_BUILTIN) 0 else 1 }
+        val inputs =
+            devices.map { info ->
+                val type = AudioInput.mapType(info.type)
+                val id = AudioInput.stableId(info.type, info.address ?: "")
+                // For built-in mic, ignore productName (often returns device model like "V2222")
+                // and use the friendly fallback. For others, use productName if meaningful.
+                val name =
+                    if (type == InputType.BUILTIN_MIC) {
+                        fallbackName(info.type)
+                    } else {
+                        info.productName?.toString()?.ifBlank { null } ?: fallbackName(info.type)
+                    }
+                AudioInput(id = id, name = name, type = type)
+            }
+        // Deduplicate by id (some devices report multiple built-in mics with same id)
+        return inputs.distinctBy { it.id }.sortedBy { if (it.id == AudioInput.ID_BUILTIN) 0 else 1 }
     }
 
     // Raw platform objects for setPreferredDevice (P5.2); null when the

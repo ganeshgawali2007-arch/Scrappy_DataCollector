@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ivory canvas behind the ochre microphone (scrappy brand, ui.readme §3). -->
+<resources>
+    <color name="ic_launcher_background">#FAF8F1</color>
+    <!-- ui.readme §3 warm ivory canvas, mirrored in Compose ScrappyColors. -->
+    <color name="scrappy_background">#FAF8F1</color>
+</resources>

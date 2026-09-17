@@ -7,3 +7,15 @@ local.properties
 *.iml
 .DS_Store
 *.hprof
+
+# Release signing material — never commit (P13.4).
+keystore.properties
+keystore/
+*.jks
+*.keystore
+
+# Local artifacts
+*.apk
+*.aab
+emulator_screenshot*.png
+scrappy*.apk

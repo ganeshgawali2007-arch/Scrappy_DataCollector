@@ -5,10 +5,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -73,44 +80,116 @@ fun HomeScreen(
         status = stringResource(R.string.status_prefix, status),
         onNavigate = onNavigate,
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             if (modelMissing) {
-                Text("ASR model not installed — recording still works. Install via file picker (see Diagnostics).")
+                Text(
+                    "ASR model not installed — recording still works. Install via file picker (see Menu → Diagnostics).",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             if (lowStorage) {
-                Text("Storage low — free space before recording. Completed samples are preserved.")
+                Text(
+                    "Storage low — free space before recording. Completed samples are preserved.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
             }
-            // P8.1: resumable session ahead of the new-session action.
+            // Primary action: Continue or New session
             val resumable = ActiveSession.id
             if (resumable != null) {
-                Button(
-                    onClick = { onNavigate(Routes.RECORDING) },
-                    modifier =
-                        Modifier.fillMaxWidth().heightIn(min = 56.dp)
-                            .semantics { contentDescription = "Continue session" },
+                // Show the active session info + Continue button
+                val session = sessions.find { it.id == resumable }
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        ),
                 ) {
-                    Text("Continue session")
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            "In progress: ${session?.grade ?: ""} ${session?.subject ?: ""} (${session?.defaultLanguage ?: ""})",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                        Text(
+                            "Tap to continue recording where you left off.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                        )
+                        Button(
+                            onClick = { onNavigate(Routes.RECORDING) },
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        ) {
+                            Text("Continue session")
+                        }
+                    }
+                }
+            } else {
+                // No active session - show New session as primary
+                Button(
+                    onClick = { onNavigate(Routes.NEW_SESSION) },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
+                ) {
+                    Text(stringResource(R.string.action_new_session))
                 }
             }
-            Button(
-                onClick = { onNavigate(Routes.NEW_SESSION) },
-                modifier =
-                    Modifier.fillMaxWidth().heightIn(min = 56.dp)
-                        .semantics { contentDescription = "New session" },
-            ) {
-                Text(stringResource(R.string.action_new_session))
+            if (sessions.isNotEmpty()) {
+                Text(
+                    "Recent sessions",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
             }
             sessions.takeLast(5).reversed().forEach { s: Session ->
-                Button(
+                Card(
                     onClick = {
                         ActiveSession.id = s.id
-                        onNavigate(Routes.RECORDING)
+                        onNavigate(Routes.SUMMARY)
                     },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text("${s.grade} ${s.subject} (${s.defaultLanguage})")
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            "${s.grade} ${s.subject} (${s.defaultLanguage})",
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        Text(
+                            "Opens summary · tap to review and export",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            HomeNavLinks(onNavigate)
+        }
+    }
+}
+
+@Composable
+private fun HomeNavLinks(onNavigate: (String) -> Unit) {
+    Text("Manage", style = MaterialTheme.typography.titleMedium)
+    val links =
+        listOf(
+            Routes.EXPORT to "Export a session",
+            Routes.RECOVERY to "Recovery",
+            Routes.ERRORS to "Errors",
+            Routes.DIAGNOSTICS to "Diagnostics & models",
+        )
+    links.forEach { (route, label) ->
+        TextButton(
+            onClick = { onNavigate(route) },
+            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+        ) {
+            Text(label, modifier = Modifier.fillMaxWidth())
         }
     }
 }
@@ -371,6 +450,19 @@ fun SummaryScreen(
             }
             samples.takeLast(20).reversed().forEach { s: ClassroomSample ->
                 Text("#${s.sequenceNumber} ${s.sourceLanguage} ${s.state}" + (s.errorCode?.let { " ($it)" } ?: ""))
+            }
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            Button(
+                onClick = { onNavigate(Routes.RECORDING) },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
+            ) {
+                Text("Record more")
+            }
+            Button(
+                onClick = { onNavigate(Routes.EXPORT) },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
+            ) {
+                Text("Export session")
             }
         }
     }

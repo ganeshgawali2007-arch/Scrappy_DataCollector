@@ -20,8 +20,15 @@
     <string name="status_prefix">स्थिति: %1$s</string>
     <string name="action_new_session">नया सत्र</string>
     <string name="action_start_session">सत्र शुरू करें (स्टब)</string>
+    <string name="action_back">वापस</string>
     <string name="action_request_mic">माइक्रोफ़ोन अनुमति माँगें</string>
     <string name="action_start_stop_stub">शुरू / रोकें (P4 सेवा)</string>
+    <string name="action_continue_session">सत्र जारी रखें</string>
+    <string name="action_open_summary">सत्र सारांश</string>
+    <string name="action_open_export">निर्यात</string>
+    <string name="action_open_recovery">पुनर्प्राप्ति</string>
+    <string name="action_open_errors">त्रुटियाँ</string>
+    <string name="action_open_diagnostics">निदान और मॉडल</string>
     <string name="new_session_hint">कक्षा, विषय, छद्म कोड, डिफ़ॉल्ट भाषा, नोट्स, सहमति। असली नाम नहीं।</string>
 
     <string name="field_grade">कक्षा</string>

@@ -1,4 +1,3 @@
-@Suppress("DSL_SCOPE_VIOLATION") // Accessing catalog libs in plugins block needs this on some setups.
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -33,9 +32,41 @@ android {
         }
     }
 
+    // Release signing (P13.4): load keystore.properties at config time.
+    val keystoreFile = rootProject.file("keystore.properties")
+    val keystoreData =
+        if (keystoreFile.exists()) {
+            keystoreFile.readText().lines()
+                .filter { it.contains("=") }
+                .associate { line ->
+                    val idx = line.indexOf('=')
+                    line.substring(0, idx).trim() to line.substring(idx + 1).trim()
+                }
+        } else {
+            emptyMap<String, String>()
+        }
+
+    signingConfigs {
+        create("release") {
+            if (keystoreData["storeFile"] != null) {
+                storeFile = rootProject.file(keystoreData["storeFile"]!!)
+                storePassword = keystoreData["storePassword"]!!
+                keyAlias = keystoreData["keyAlias"]!!
+                keyPassword = keystoreData["keyPassword"]!!
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // Production: R8 code shrink + obfuscate + resource shrink (P13.4).
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+            signingConfig = signingConfigs.getByName("release")
             // Release ABI: arm64-v8a only (DECISIONS.md D2.3).
             ndk {
                 abiFilters += "arm64-v8a"

@@ -18,7 +18,14 @@
     <string name="nav_diagnostics">Diagnostics</string>
 
     <string name="status_prefix">State: %1$s</string>
+    <string name="action_back">Back</string>
     <string name="action_new_session">New session</string>
+    <string name="action_continue_session">Continue session</string>
+    <string name="action_open_summary">Session summary</string>
+    <string name="action_open_export">Export</string>
+    <string name="action_open_recovery">Recovery</string>
+    <string name="action_open_errors">Errors</string>
+    <string name="action_open_diagnostics">Diagnostics</string>
     <string name="action_start_session">Start session (stub)</string>
     <string name="action_request_mic">Request microphone permission</string>
     <string name="action_start_stop_stub">Start / Stop (P4 service)</string>

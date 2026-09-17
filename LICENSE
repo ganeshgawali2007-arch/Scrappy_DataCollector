@@ -1,0 +1,21 @@
+Proprietary License
+
+Copyright (c) 2026 scrappy contributors
+
+This software is proprietary and confidential. Unauthorized copying,
+distribution, modification, or use is strictly prohibited.
+
+This software is provided "as is", without warranty of any kind,
+express or implied, including but not limited to the warranties of
+merchantability, fitness for a particular purpose and noninfringement.
+In no event shall the authors or copyright holders be liable for any
+claim, damages or other liability.
+
+Third-party components:
+- whisper.cpp (MIT) — https://github.com/ggerganov/whisper.cpp
+- llama.cpp (MIT) — https://github.com/ggerganov/llama.cpp
+- OpenAI Whisper model weights (MIT-compatible)
+- Android Jetpack libraries (Apache 2.0)
+- Room, kotlinx.serialization (Apache 2.0)
+
+See docs/MODEL_LICENSES.md for full provenance and licenses.

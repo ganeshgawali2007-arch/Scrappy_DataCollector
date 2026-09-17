@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- scrappy app theme: light ivory canvas, no action bar; Compose owns the UI.
+     Light-only initial field release (ui.readme §3, D13). -->
+<resources>
+    <style name="Theme.Scrappy" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/scrappy_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>
