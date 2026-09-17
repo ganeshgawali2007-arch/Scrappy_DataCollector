@@ -68,10 +68,10 @@ jobs:
           name: app-release-unsigned
           path: app/build/outputs/apk/release/app-release-unsigned.apk
 
-  # Release job — only runs on tagged commits
+  # Release job — only runs on tagged commits AND when signing secrets are available
   release:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') && github.repository == 'ganeshgawali2007-arch/Scrappy_DataCollector'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -97,7 +97,18 @@ jobs:
       - name: Grant gradlew execute permission
         run: chmod +x gradlew
 
+      - name: Check signing secrets available
+        id: check_secrets
+        run: |
+          if [ -z "${{ secrets.KEYSTORE_BASE64 }}" ] || [ -z "${{ secrets.KEYSTORE_PASSWORD }}" ] || [ -z "${{ secrets.KEY_ALIAS }}" ] || [ -z "${{ secrets.KEY_PASSWORD }}" ]; then
+            echo "secrets_missing=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Signing secrets not configured — skipping signed release"
+          else
+            echo "secrets_missing=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Configure release signing
+        if: steps.check_secrets.outputs.secrets_missing == 'false'
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -113,18 +124,26 @@ jobs:
           EOF
 
       - name: Build signed release
+        if: steps.check_secrets.outputs.secrets_missing == 'false'
         run: ./gradlew assembleRelease --no-daemon
 
       - name: Upload signed release
+        if: steps.check_secrets.outputs.secrets_missing == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: app-release-signed
           path: app/build/outputs/apk/release/app-release.apk
 
       - name: Create GitHub Release
+        if: steps.check_secrets.outputs.secrets_missing == 'false'
         uses: softprops/action-gh-release@v2
         with:
           files: app/build/outputs/apk/release/app-release.apk
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Skip release — secrets not configured
+        if: steps.check_secrets.outputs.secrets_missing == 'true'
+        run: |
+          echo "⏭️ Skipping signed release — configure KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD in repo secrets to enable"
