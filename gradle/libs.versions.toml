@@ -1,11 +1,11 @@
 [versions]
 agp = "8.7.3"
 kotlin = "2.0.21"
-coreKtx = "1.13.1"
+coreKtx = "1.19.0"
 lifecycle = "2.8.6"
 activityCompose = "1.9.3"
 composeBom = "2024.12.01"
-navigationCompose = "2.8.0"
+navigationCompose = "2.10.1"
 serializationJson = "1.7.3"
 ktlint = "12.1.1"
 room = "2.6.1"
