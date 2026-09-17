@@ -35,7 +35,7 @@ jobs:
 
       - name: Offline gate — production manifest must not request INTERNET
         run: |
-          if grep -q "INTERNET" app/src/main/AndroidManifest.xml; then
+          if grep -q 'android.permission.INTERNET' app/src/main/AndroidManifest.xml; then
             echo "❌ INTERNET permission found in production manifest"
             exit 1
           fi
