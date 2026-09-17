@@ -66,7 +66,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
-            signingConfig = signingConfigs.getByName("release")
+            // Only apply signing config if keystore.properties exists (local build or CI with secrets)
+            if (keystoreData.isNotEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             // Release ABI: arm64-v8a only (DECISIONS.md D2.3).
             ndk {
                 abiFilters += "arm64-v8a"
